@@ -9,6 +9,7 @@
 #include <cexceptions.h>
 
 extern FILE *yyin;
+extern FILE *yy2in;
 
 extern int yyparse( void );
 

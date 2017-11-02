@@ -21,7 +21,7 @@
 #include <stringx.h>
 #include <assert.h>
 
-FILE *yyin;
+FILE *yy2in;
 
 static CIF_COMPILER *cif_cc;
 
@@ -99,9 +99,9 @@ static int cif_lexer( FILE *in, cexception_t *ex );
 
 int cif2lex( void )
 {
-    if( !yyin )
-        yyin = stdin;
-    return cif_lexer( yyin, NULL );
+    if( !yy2in )
+        yy2in = stdin;
+    return cif_lexer( yy2in, NULL );
 }
 
 void cif2restart( void )

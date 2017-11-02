@@ -2074,7 +2074,7 @@ static void cif_compile_file( FILE *in, char *filename, cexception_t *ex )
     int yyretval = 0;
 
     cexception_guard( inner ) {
-        yyin = in;
+        yy2in = in;
         px = &inner; /* catch all parser-generated exceptions */
         if( (yyretval = cif2parse()) != 0 ) {
             if( cif_compiler_cif( cif_cc ) ) {
@@ -2090,8 +2090,8 @@ static void cif_compile_file( FILE *in, char *filename, cexception_t *ex )
         }
     }
     cexception_catch {
-        if( yyin ) {
-            yyin = NULL;
+        if( yy2in ) {
+            yy2in = NULL;
         }
         cexception_reraise( inner, ex );
     }
