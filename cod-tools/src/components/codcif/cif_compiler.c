@@ -1,7 +1,7 @@
 /*-------------------------------------------------------------------------*\
 * $Author: andrius $
-* $Date: 2017-04-26 14:50:59 +0300 (Wed, 26 Apr 2017) $ 
-* $Revision: 5220 $
+* $Date: 2017-09-19 19:22:03 +0300 (Tue, 19 Sep 2017) $ 
+* $Revision: 5517 $
 * $URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cif_compiler.c $
 \*-------------------------------------------------------------------------*/
 
@@ -507,7 +507,8 @@ CIF *new_cif_from_cif_file( char *filename, cif_option_t co, cexception_t *ex )
     }
 
     int ch = getc( in );
-    if( ch == 254 ) { /* U+FEFF detected */
+    if( ch == 239 ) { /* U+FEFF detected */
+        ch = getc( in );
         ch = getc( in );
         ch = getc( in );
     }

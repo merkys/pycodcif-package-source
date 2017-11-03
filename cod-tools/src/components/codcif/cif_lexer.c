@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
 **$Author: andrius $
-**$Date: 2017-05-25 14:32:54 +0300 (Thu, 25 May 2017) $
-**$Revision: 5331 $
+**$Date: 2017-08-04 15:35:04 +0300 (Fri, 04 Aug 2017) $
+**$Revision: 5490 $
 **$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cif_lexer.c $
 \*---------------------------------------------------------------------------*/
 
@@ -156,10 +156,16 @@ static int cif_lexer( FILE *in, cexception_t *ex )
                 putchar( ch );
             }
             /* skip comments: */
+            pos = current_pos;
             while( ch != EOF && ch != '\n' && ch != '\r' ) {
                 ch = getlinec( in, ex );
+                pos ++;
                 if( yy_flex_debug ) {
                     putchar( ch );
+                }
+                if( (ch < 32 && ch != 9 && ch != 10 && ch != 13) || ch >= 127 ) {
+                    yywarning_token( cif_cc, "unallowed symbol in CIF comment",
+                                     cif_flex_current_line_number(), pos, ex );
                 }
             }
             if( ch == '\r' ) {
