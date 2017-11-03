@@ -120,8 +120,6 @@ tests/cases/cif_parser_test_066.inp
 tests/cases/cif_parser_test_067.inp
 tests/cases/cif_parser_test_068.inp
 tests/cases/cif_parser_test_069.inp
-tests/cases/cif_parser_test_070.inp
-tests/cases/cif_parser_test_070.opt
 tests/cases/cif_parser_test_071.inp
 tests/cases/cif_parser_test_072.inp
 tests/cases/cif_parser_test_073.inp
@@ -165,17 +163,8 @@ tests/cases/cif_parser_test_110.inp
 tests/cases/cif_parser_test_110.tst
 tests/cases/cif_parser_test_111.inp
 tests/cases/cif_parser_test_111.tst
-tests/cases/cif_parser_test_112.inp
-tests/cases/cif_parser_test_112.opt
-tests/cases/cif_parser_test_112.tst
-tests/cases/cif_parser_test_113.inp
-tests/cases/cif_parser_test_113.opt
-tests/cases/cif_parser_test_113.tst
 tests/cases/cif_parser_test_114.inp
 tests/cases/cif_parser_test_114.tst
-tests/cases/cif_parser_test_115.inp
-tests/cases/cif_parser_test_115.opt
-tests/cases/cif_parser_test_115.tst
 tests/cases/cif_parser_test_116.inp
 tests/cases/cif_parser_test_117.inp
 tests/cases/cif_parser_test_118.inp
@@ -377,7 +366,6 @@ tests/outputs/cif_parser_test_066.out
 tests/outputs/cif_parser_test_067.out
 tests/outputs/cif_parser_test_068.out
 tests/outputs/cif_parser_test_069.out
-tests/outputs/cif_parser_test_070.out
 tests/outputs/cif_parser_test_071.out
 tests/outputs/cif_parser_test_072.out
 tests/outputs/cif_parser_test_073.out
@@ -419,10 +407,7 @@ tests/outputs/cif_parser_test_108.out
 tests/outputs/cif_parser_test_109.out
 tests/outputs/cif_parser_test_110.out
 tests/outputs/cif_parser_test_111.out
-tests/outputs/cif_parser_test_112.out
-tests/outputs/cif_parser_test_113.out
 tests/outputs/cif_parser_test_114.out
-tests/outputs/cif_parser_test_115.out
 tests/outputs/cif_parser_test_116.out
 tests/outputs/cif_parser_test_117.out
 tests/outputs/cif_parser_test_118.out
