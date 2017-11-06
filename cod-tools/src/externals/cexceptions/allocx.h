@@ -2,7 +2,7 @@
 ** $Author: saulius $
 ** $Date: 2015-04-05 11:51:47 +0300 (Sun, 05 Apr 2015) $
 ** $Revision: 3207 $
-** $URL: svn://www.crystallography.net/cod-tools/trunk/src/externals/cexceptions/allocx.h $
+** $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-cleanup/src/externals/cexceptions/allocx.h $
 \*---------------------------------------------------------------------------*/
 
 #ifndef __ALLOCX_H

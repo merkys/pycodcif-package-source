@@ -30,7 +30,6 @@ cod-tools/src/components/codcif/common.c
 cod-tools/src/components/codcif/common.h
 cod-tools/src/components/codcif/datablock.c
 cod-tools/src/components/codcif/datablock.h
-cod-tools/src/components/codcif/yy.c
 cod-tools/src/components/codcif/yy.h
 cod-tools/src/components/pycodcif/__init__.py
 cod-tools/src/components/pycodcif/pycodcif.c

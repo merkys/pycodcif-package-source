@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------*\
 * $Author: andrius $
-* $Date: 2017-04-12 13:39:05 +0300 (Wed, 12 Apr 2017) $ 
-* $Revision: 5195 $
-* $URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cif_compiler.h $
+* $Date: 2017-11-03 11:43:05 +0200 (Fri, 03 Nov 2017) $ 
+* $Revision: 5710 $
+* $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-cleanup/src/components/codcif/cif_compiler.h $
 \*-------------------------------------------------------------------------*/
 
 #ifndef __CIF_COMPILER_H
@@ -26,11 +26,13 @@ void delete_cif_compiler( CIF_COMPILER *c );
 
 char *cif_compiler_filename( CIF_COMPILER *ccc );
 CIF *cif_compiler_cif( CIF_COMPILER *ccc );
+FILE *cif_compiler_file( CIF_COMPILER *ccc );
 int cif_compiler_nerrors( CIF_COMPILER *ccc );
 int cif_compiler_loop_tag_count( CIF_COMPILER *ccc );
 int cif_compiler_loop_value_count( CIF_COMPILER *ccc );
 int cif_compiler_loop_start_line( CIF_COMPILER *ccc );
 
+void cif_compiler_set_file( CIF_COMPILER *ccc, FILE *file );
 void cif_compiler_detach_cif( CIF_COMPILER *ccc );
 void cif_compiler_increase_nerrors( CIF_COMPILER *ccc );
 void cif_compiler_increase_nwarnings( CIF_COMPILER *ccc );

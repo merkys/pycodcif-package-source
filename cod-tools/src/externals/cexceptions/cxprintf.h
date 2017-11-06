@@ -2,7 +2,7 @@
 **$Author: saulius $
 **$Date: 2011-03-08 20:45:40 +0200 (Tue, 08 Mar 2011) $ 
 **$Revision: 1590 $
-**$URL: svn://www.crystallography.net/cod-tools/trunk/src/externals/cexceptions/cxprintf.h $
+**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-cleanup/src/externals/cexceptions/cxprintf.h $
 \*---------------------------------------------------------------------------*/
 
 #ifndef __CEX_REPORT_H

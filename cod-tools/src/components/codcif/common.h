@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
 **$Author: andrius $
-**$Date: 2017-04-12 13:39:05 +0300 (Wed, 12 Apr 2017) $ 
-**$Revision: 5195 $
-**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/common.h $
+**$Date: 2017-11-06 12:01:10 +0200 (Mon, 06 Nov 2017) $ 
+**$Revision: 5717 $
+**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-cleanup/src/components/codcif/common.h $
 \*---------------------------------------------------------------------------*/
 
 #ifndef __COMMON_H

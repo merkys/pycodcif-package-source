@@ -1,7 +1,7 @@
 from setuptools import setup, Command, Extension
 
-version = '0.8.5'
-svnrevision = '5706'
+version = '0.8.5.dev1'
+svnrevision = 'andrius-codcif-cleanup/5717'
 
 setup(
     name="pycodcif",
@@ -27,7 +27,6 @@ setup(
                    'cod-tools/src/components/codcif/cif_options.c',
                    'cod-tools/src/components/codcif/common.c',
                    'cod-tools/src/components/codcif/ciftable.c',
-                   'cod-tools/src/components/codcif/yy.c',
                    'cod-tools/src/components/codcif/cif2_lexer.c',
                    'cod-tools/src/components/codcif/cifvalue.c',
                    'cod-tools/src/components/codcif/cifmessage.c',
@@ -46,7 +45,6 @@ setup(
                     ('_YACC_',None),
                     ('YYDEBUG','1'),
                     ('SVN_VERSION',svnrevision),
-                    ('yyerror','ciferror'),
                   ],
                   include_dirs=['cod-tools/src/externals/cexceptions',
                                 'cod-tools/src/components/codcif']),

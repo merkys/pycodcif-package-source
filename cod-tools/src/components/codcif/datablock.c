@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
-**$Author: antanas $
-**$Date: 2017-05-18 16:06:28 +0300 (Thu, 18 May 2017) $ 
-**$Revision: 5275 $
-**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/datablock.c $
+**$Author: andrius $
+**$Date: 2017-11-06 12:01:10 +0200 (Mon, 06 Nov 2017) $ 
+**$Revision: 5717 $
+**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-cleanup/src/components/codcif/datablock.c $
 \*---------------------------------------------------------------------------*/
 
 /* representation of the CIF data for the CIF parser. */

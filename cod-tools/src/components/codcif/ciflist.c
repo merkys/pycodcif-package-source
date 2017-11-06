@@ -2,7 +2,7 @@
 * $Author: andrius $
 * $Date: 2017-04-12 13:39:05 +0300 (Wed, 12 Apr 2017) $ 
 * $Revision: 5195 $
-* $URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/ciflist.c $
+* $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-cleanup/src/components/codcif/ciflist.c $
 \*-------------------------------------------------------------------------*/
 
 #include <string.h>
