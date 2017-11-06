@@ -1,4 +1,0 @@
-cleanAll distclean: cleanAll-pyc
-
-cleanAll-pyc:
-	rm -f *.pyc
