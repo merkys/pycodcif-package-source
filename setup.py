@@ -1,7 +1,7 @@
 from setuptools import setup, Command, Extension
 
-version = '0.8.5.dev1'
-svnrevision = 'andrius-codcif-cleanup/5717'
+version = '0.8.7'
+svnrevision = '5722'
 
 setup(
     name="pycodcif",
@@ -14,7 +14,7 @@ setup(
     maintainer_email="andrius.merkys@gmail.com",
     packages=['pycodcif'],
     package_dir={'pycodcif': 'cod-tools/src/components/pycodcif'},
-    url="http://wiki.crystallography.net/cod-tools",
+    url="http://wiki.crystallography.net/cod-tools/CIF-parser",
     license="GPLv2",
     ext_modules=[
         Extension('pycodcif._pycodcif',
@@ -45,6 +45,7 @@ setup(
                     ('_YACC_',None),
                     ('YYDEBUG','1'),
                     ('SVN_VERSION',svnrevision),
+                    ('yyerror','ciferror'),
                   ],
                   include_dirs=['cod-tools/src/externals/cexceptions',
                                 'cod-tools/src/components/codcif']),

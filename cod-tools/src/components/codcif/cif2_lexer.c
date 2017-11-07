@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
 **$Author: andrius $
-**$Date: 2017-11-03 11:43:05 +0200 (Fri, 03 Nov 2017) $
-**$Revision: 5710 $
-**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-cleanup/src/components/codcif/cif2_lexer.c $
+**$Date: 2017-11-03 10:21:45 +0200 (Fri, 03 Nov 2017) $
+**$Revision: 5707 $
+**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cif2_lexer.c $
 \*---------------------------------------------------------------------------*/
 
 /* exports: */
@@ -20,6 +20,8 @@
 #include <allocx.h>
 #include <stringx.h>
 #include <assert.h>
+
+FILE *yy2in;
 
 static CIF_COMPILER *cif_cc;
 
@@ -97,9 +99,9 @@ static int cif_lexer( FILE *in, cexception_t *ex );
 
 int cif2lex( void )
 {
-    if( !cif_compiler_file( cif_cc ) )
-        cif_compiler_set_file( cif_cc, stdin );
-    return cif_lexer( cif_compiler_file( cif_cc ), NULL );
+    if( !yy2in )
+        yy2in = stdin;
+    return cif_lexer( yy2in, NULL );
 }
 
 void cif2restart( void )

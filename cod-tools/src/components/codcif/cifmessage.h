@@ -2,7 +2,7 @@
 **$Author: andrius $
 **$Date: 2015-07-22 20:55:17 +0300 (Wed, 22 Jul 2015) $ 
 **$Revision: 3601 $
-**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-cleanup/src/components/codcif/cifmessage.h $
+**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cifmessage.h $
 \*---------------------------------------------------------------------------*/
 
 #ifndef __CIFMESSAGE_H

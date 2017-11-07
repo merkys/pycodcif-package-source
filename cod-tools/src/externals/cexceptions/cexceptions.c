@@ -2,7 +2,7 @@
 ** $Author: saulius $
 ** $Date: 2015-07-21 17:39:27 +0300 (Tue, 21 Jul 2015) $ 
 ** $Revision: 3587 $
-** $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-cleanup/src/externals/cexceptions/cexceptions.c $
+** $URL: svn://www.crystallography.net/cod-tools/trunk/src/externals/cexceptions/cexceptions.c $
 \*---------------------------------------------------------------------------*/
 
 #include <stdio.h>

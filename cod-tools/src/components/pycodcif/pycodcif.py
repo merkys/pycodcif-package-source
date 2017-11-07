@@ -97,6 +97,9 @@ warnings.filterwarnings('ignore', category=UnicodeWarning)
 def parse(filename,*args):
     import re
 
+    if isinstance(filename,unicode):
+        filename = filename.encode('utf-8')
+
     prog = '-'
     try:
         import sys
@@ -392,7 +395,7 @@ def escape_meta(text, escaped_symbols):
     symbols = "|".join(["\\{0}".format(x) for x in escaped_symbols.keys()])
 
     def escape_internal(matchobj):
-        return escaped_symbols(matchobj.group(0))
+        return escaped_symbols[matchobj.group(0)]
 
     return re.sub("({0})".format(symbols), escape_internal, text)
 

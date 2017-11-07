@@ -1933,7 +1933,7 @@ static void cif_compile_file( FILE *in, char *filename, cexception_t *ex )
     int yyretval = 0;
 
     cexception_guard( inner ) {
-        cif_compiler_set_file( cif_cc, in );
+        yyin = in;
         px = &inner; /* catch all parser-generated exceptions */
         if( (yyretval = cifparse()) != 0 ) {
             if( cif_compiler_cif( cif_cc ) ) {
@@ -1949,8 +1949,8 @@ static void cif_compile_file( FILE *in, char *filename, cexception_t *ex )
         }
     }
     cexception_catch {
-        if( cif_compiler_file( cif_cc ) ) {
-            cif_compiler_set_file( cif_cc, NULL );
+        if( yyin ) {
+            yyin = NULL;
         }
         cexception_reraise( inner, ex );
     }
