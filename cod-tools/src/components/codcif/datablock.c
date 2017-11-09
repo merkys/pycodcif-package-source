@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
-**$Author: antanas $
-**$Date: 2017-05-18 16:06:28 +0300 (Thu, 18 May 2017) $ 
-**$Revision: 5275 $
+**$Author: andrius $
+**$Date: 2017-11-07 11:53:10 +0200 (Tue, 07 Nov 2017) $ 
+**$Revision: 5724 $
 **$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/datablock.c $
 \*---------------------------------------------------------------------------*/
 
