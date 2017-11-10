@@ -402,11 +402,129 @@ def escape_meta(text, escaped_symbols):
 class CifParserException(Exception):
     pass
 
+class CifFile(object):
+    def __init__(self):
+        self._cif = new_cif( None )
+
+    def __getitem__(self, key):
+        datablock = cif_datablock_list( self._cif )
+        for i in range(0,key):
+            if datablock is None:
+                raise IndexError('list index out of range')
+            datablock = datablock_next( datablock )
+        if datablock is None:
+            raise IndexError('list index out of range')
+        return datablock
+
+    def __str__(self):
+        with capture() as output:
+            cif_print( self._cif )
+        return output[0]
+
+    def append(self, datablock):
+# must be a datablock!
+        cif_append_datablock( self._cif, datablock._datablock )
+
+class CifDatablock(object):
+    def __init__(self, name):
+        self._datablock = new_datablock( name, None, None )
+
+    def __getitem__(self, key):
+        tag_index = datablock_tag_index( self._datablock, key )
+        if tag_index == -1:
+            raise KeyError(key)
+        return extract_value( datablock_cifvalue( self._datablock, tag_index, 0 ) )
+
+    def __setitem__(self, key, value):
+        tag_index = datablock_tag_index( self._datablock, key )
+        if tag_index == -1:
+            datablock_insert_cifvalue( self._datablock, key, value, None )
+
+import contextlib
+
+@contextlib.contextmanager
+def capture():
+    import sys
+    from cStringIO import StringIO
+    oldout,olderr = sys.stdout, sys.stderr
+    try:
+        out=[StringIO(), StringIO()]
+        sys.stdout,sys.stderr = out
+        yield out
+    finally:
+        sys.stdout,sys.stderr = oldout, olderr
+        out[0] = out[0].getvalue()
+        out[1] = out[1].getvalue()
+
 
 
 def parse_cif(fname, prog, options):
     return _pycodcif.parse_cif(fname, prog, options)
 parse_cif = _pycodcif.parse_cif
+
+def cif_option_default():
+    return _pycodcif.cif_option_default()
+cif_option_default = _pycodcif.cif_option_default
+
+def new_value_from_scalar(s, type, ex):
+    return _pycodcif.new_value_from_scalar(s, type, ex)
+new_value_from_scalar = _pycodcif.new_value_from_scalar
+
+def value_dump(value):
+    return _pycodcif.value_dump(value)
+value_dump = _pycodcif.value_dump
+
+def new_datablock(name, next, ex):
+    return _pycodcif.new_datablock(name, next, ex)
+new_datablock = _pycodcif.new_datablock
+
+def datablock_next(datablock):
+    return _pycodcif.datablock_next(datablock)
+datablock_next = _pycodcif.datablock_next
+
+def datablock_cifvalue(datablock, tag_nr, val_nr):
+    return _pycodcif.datablock_cifvalue(datablock, tag_nr, val_nr)
+datablock_cifvalue = _pycodcif.datablock_cifvalue
+
+def datablock_tag_index(datablock, tag):
+    return _pycodcif.datablock_tag_index(datablock, tag)
+datablock_tag_index = _pycodcif.datablock_tag_index
+
+def datablock_overwrite_cifvalue(datablock, tag_nr, val_nr, value, ex):
+    return _pycodcif.datablock_overwrite_cifvalue(datablock, tag_nr, val_nr, value, ex)
+datablock_overwrite_cifvalue = _pycodcif.datablock_overwrite_cifvalue
+
+def datablock_insert_cifvalue(datablock, tag, value, ex):
+    return _pycodcif.datablock_insert_cifvalue(datablock, tag, value, ex)
+datablock_insert_cifvalue = _pycodcif.datablock_insert_cifvalue
+
+def new_cif(ex):
+    return _pycodcif.new_cif(ex)
+new_cif = _pycodcif.new_cif
+
+def cif_start_datablock(cif, name, ex):
+    return _pycodcif.cif_start_datablock(cif, name, ex)
+cif_start_datablock = _pycodcif.cif_start_datablock
+
+def cif_append_datablock(cif, datablock):
+    return _pycodcif.cif_append_datablock(cif, datablock)
+cif_append_datablock = _pycodcif.cif_append_datablock
+
+def cif_print(cif):
+    return _pycodcif.cif_print(cif)
+cif_print = _pycodcif.cif_print
+
+def cif_datablock_list(cif):
+    return _pycodcif.cif_datablock_list(cif)
+cif_datablock_list = _pycodcif.cif_datablock_list
+
+def new_cif_from_cif_file(filename, co, ex):
+    return _pycodcif.new_cif_from_cif_file(filename, co, ex)
+new_cif_from_cif_file = _pycodcif.new_cif_from_cif_file
+
+def extract_value(cifvalue):
+    return _pycodcif.extract_value(cifvalue)
+extract_value = _pycodcif.extract_value
 # This file is compatible with both classic and new-style classes.
 
 

@@ -2982,9 +2982,16 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_char swig_types[0]
-static swig_type_info *swig_types[2];
-static swig_module_info swig_module = {swig_types, 1, 0, 0, 0, 0};
+#define SWIGTYPE_p_CIF swig_types[0]
+#define SWIGTYPE_p_CIFVALUE swig_types[1]
+#define SWIGTYPE_p_DATABLOCK swig_types[2]
+#define SWIGTYPE_p_cexception_t swig_types[3]
+#define SWIGTYPE_p_char swig_types[4]
+#define SWIGTYPE_p_cif_option_t swig_types[5]
+#define SWIGTYPE_p_cif_value_type_t swig_types[6]
+#define SWIGTYPE_p_ssize_t swig_types[7]
+static swig_type_info *swig_types[9];
+static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3019,6 +3026,49 @@ static swig_module_info swig_module = {swig_types, 1, 0, 0, 0, 0};
     #include <Python.h>
 
     PyObject * parse_cif( char * fname, char * prog, PyObject * options );
+
+    // from cif_options.h:
+    #include <cif_options.h>
+
+    typedef enum cif_option_t cif_option_t;
+
+    cif_option_t cif_option_default();
+
+    // from cifvalue.h:
+    #include <cifvalue.h>
+
+    CIFVALUE *new_value_from_scalar( char *s, cif_value_type_t type, cexception_t *ex );
+    void value_dump( CIFVALUE *value );
+
+    // from datablock.h:
+    #include <datablock.h>
+
+    DATABLOCK *new_datablock( const char *name, DATABLOCK *next,
+                              cexception_t *ex );
+    DATABLOCK *datablock_next( DATABLOCK *datablock );
+    CIFVALUE *datablock_cifvalue( DATABLOCK *datablock, int tag_nr, int val_nr );
+    ssize_t datablock_tag_index( DATABLOCK *datablock, char *tag );
+    void datablock_overwrite_cifvalue( DATABLOCK * datablock, ssize_t tag_nr,
+        ssize_t val_nr, CIFVALUE *value, cexception_t *ex );
+    void datablock_insert_cifvalue( DATABLOCK * datablock, char *tag,
+                                    CIFVALUE *value, cexception_t *ex );
+
+    // from cif.h:
+    #include <cif.h>
+
+    CIF *new_cif( cexception_t *ex );
+    void cif_start_datablock( CIF *cif, const char *name,
+                              cexception_t *ex );
+    void cif_append_datablock( CIF * cif, DATABLOCK *datablock );
+    void cif_print( CIF *cif );
+    DATABLOCK * cif_datablock_list( CIF *cif );
+
+    // from cif_compiler.h:
+    #include <cif_compiler.h>
+
+    CIF *new_cif_from_cif_file( char *filename, cif_option_t co, cexception_t *ex );
+
+    PyObject *extract_value( CIFVALUE * cifvalue );
 
 
 SWIGINTERN swig_type_info*
@@ -3135,6 +3185,164 @@ SWIG_AsCharPtrAndSize(PyObject *obj, char** cptr, size_t* psize, int *alloc)
 
 
 
+
+SWIGINTERNINLINE PyObject*
+  SWIG_From_int  (int value)
+{
+  return PyInt_FromLong((long) value);
+}
+
+
+#include <limits.h>
+#if !defined(SWIG_NO_LLONG_MAX)
+# if !defined(LLONG_MAX) && defined(__GNUC__) && defined (__LONG_LONG_MAX__)
+#   define LLONG_MAX __LONG_LONG_MAX__
+#   define LLONG_MIN (-LLONG_MAX - 1LL)
+#   define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+# endif
+#endif
+
+
+SWIGINTERN int
+SWIG_AsVal_double (PyObject *obj, double *val)
+{
+  int res = SWIG_TypeError;
+  if (PyFloat_Check(obj)) {
+    if (val) *val = PyFloat_AsDouble(obj);
+    return SWIG_OK;
+#if PY_VERSION_HEX < 0x03000000
+  } else if (PyInt_Check(obj)) {
+    if (val) *val = PyInt_AsLong(obj);
+    return SWIG_OK;
+#endif
+  } else if (PyLong_Check(obj)) {
+    double v = PyLong_AsDouble(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      PyErr_Clear();
+    }
+  }
+#ifdef SWIG_PYTHON_CAST_MODE
+  {
+    int dispatch = 0;
+    double d = PyFloat_AsDouble(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = d;
+      return SWIG_AddCast(SWIG_OK);
+    } else {
+      PyErr_Clear();
+    }
+    if (!dispatch) {
+      long v = PyLong_AsLong(obj);
+      if (!PyErr_Occurred()) {
+	if (val) *val = v;
+	return SWIG_AddCast(SWIG_AddCast(SWIG_OK));
+      } else {
+	PyErr_Clear();
+      }
+    }
+  }
+#endif
+  return res;
+}
+
+
+#include <float.h>
+
+
+#include <math.h>
+
+
+SWIGINTERNINLINE int
+SWIG_CanCastAsInteger(double *d, double min, double max) {
+  double x = *d;
+  if ((min <= x && x <= max)) {
+   double fx = floor(x);
+   double cx = ceil(x);
+   double rd =  ((x - fx) < 0.5) ? fx : cx; /* simple rint */
+   if ((errno == EDOM) || (errno == ERANGE)) {
+     errno = 0;
+   } else {
+     double summ, reps, diff;
+     if (rd < x) {
+       diff = x - rd;
+     } else if (rd > x) {
+       diff = rd - x;
+     } else {
+       return 1;
+     }
+     summ = rd + x;
+     reps = diff/summ;
+     if (reps < 8*DBL_EPSILON) {
+       *d = rd;
+       return 1;
+     }
+   }
+  }
+  return 0;
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_long (PyObject *obj, long* val)
+{
+#if PY_VERSION_HEX < 0x03000000
+  if (PyInt_Check(obj)) {
+    if (val) *val = PyInt_AsLong(obj);
+    return SWIG_OK;
+  } else
+#endif
+  if (PyLong_Check(obj)) {
+    long v = PyLong_AsLong(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_OK;
+    } else {
+      PyErr_Clear();
+      return SWIG_OverflowError;
+    }
+  }
+#ifdef SWIG_PYTHON_CAST_MODE
+  {
+    int dispatch = 0;
+    long v = PyInt_AsLong(obj);
+    if (!PyErr_Occurred()) {
+      if (val) *val = v;
+      return SWIG_AddCast(SWIG_OK);
+    } else {
+      PyErr_Clear();
+    }
+    if (!dispatch) {
+      double d;
+      int res = SWIG_AddCast(SWIG_AsVal_double (obj,&d));
+      if (SWIG_IsOK(res) && SWIG_CanCastAsInteger(&d, LONG_MIN, LONG_MAX)) {
+	if (val) *val = (long)(d);
+	return res;
+      }
+    }
+  }
+#endif
+  return SWIG_TypeError;
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_int (PyObject * obj, int *val)
+{
+  long v;
+  int res = SWIG_AsVal_long (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v < INT_MIN || v > INT_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = (int)(v);
+    }
+  }  
+  return res;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -3178,25 +3386,643 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_cif_option_default(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  cif_option_t result;
+  
+  if (!PyArg_ParseTuple(args,(char *)":cif_option_default")) SWIG_fail;
+  result = (cif_option_t)cif_option_default();
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_value_from_scalar(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  cif_value_type_t arg2 ;
+  cexception_t *arg3 = (cexception_t *) 0 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  CIFVALUE *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:new_value_from_scalar",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_value_from_scalar" "', argument " "1"" of type '" "char *""'");
+  }
+  arg1 = (char *)(buf1);
+  {
+    cif_value_type_t type;
+    if(        strcmp( PyString_AsString(obj1), "CIF_INT" ) == 0 ) {
+      type = CIF_INT;
+    } else if( strcmp( PyString_AsString(obj1), "CIF_FLOAT" ) == 0 ) {
+      type = CIF_FLOAT;
+    } else if( strcmp( PyString_AsString(obj1), "CIF_UQSTRING" ) == 0 ) {
+      type = CIF_UQSTRING;
+    } else if( strcmp( PyString_AsString(obj1), "CIF_SQSTRING" ) == 0 ) {
+      type = CIF_SQSTRING;
+    } else if( strcmp( PyString_AsString(obj1), "CIF_SQ3STRING" ) == 0 ) {
+      type = CIF_SQ3STRING;
+    } else if( strcmp( PyString_AsString(obj1), "CIF_DQ3STRING" ) == 0 ) {
+      type = CIF_DQ3STRING;
+    } else if( strcmp( PyString_AsString(obj1), "CIF_TEXT" ) == 0 ) {
+      type = CIF_TEXT;
+    } else if( strcmp( PyString_AsString(obj1), "CIF_LIST" ) == 0 ) {
+      type = CIF_LIST;
+    } else if( strcmp( PyString_AsString(obj1), "CIF_TABLE" ) == 0 ) {
+      type = CIF_TABLE;
+    } else {
+      type = CIF_NON_EXISTANT;
+    }
+    arg2 = type;
+  }
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_cexception_t, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "new_value_from_scalar" "', argument " "3"" of type '" "cexception_t *""'"); 
+  }
+  arg3 = (cexception_t *)(argp3);
+  result = (CIFVALUE *)new_value_from_scalar(arg1,arg2,arg3);
+  {
+    resultobj = extract_value( result );
+  }
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_value_dump(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CIFVALUE *arg1 = (CIFVALUE *) 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:value_dump",&obj0)) SWIG_fail;
+  {
+    cif_value_type_t type = CIF_UNKNOWN;
+    char * value = PyString_AsString( PyObject_Str( obj0 ) );
+    if(        PyInt_Check( obj0 ) || PyLong_Check( obj0 ) ) {
+      type = CIF_INT;
+    } else if( PyFloat_Check( obj0 ) ) {
+      type = CIF_FLOAT;
+    } else if( PyString_Check( obj0 ) ) {
+      type = CIF_SQSTRING; // conditions exist here
+    } else if( obj0 == Py_None ) {
+      value = "?";
+      type = CIF_UQSTRING;
+    }
+    arg1 = new_value_from_scalar( value, type, NULL );
+  }
+  value_dump(arg1);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_datablock(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  DATABLOCK *arg2 = (DATABLOCK *) 0 ;
+  cexception_t *arg3 = (cexception_t *) 0 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  DATABLOCK *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:new_datablock",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_datablock" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = (char *)(buf1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "new_datablock" "', argument " "2"" of type '" "DATABLOCK *""'"); 
+  }
+  arg2 = (DATABLOCK *)(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_cexception_t, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "new_datablock" "', argument " "3"" of type '" "cexception_t *""'"); 
+  }
+  arg3 = (cexception_t *)(argp3);
+  result = (DATABLOCK *)new_datablock((char const *)arg1,arg2,arg3);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_datablock_next(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  DATABLOCK *arg1 = (DATABLOCK *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  DATABLOCK *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:datablock_next",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "datablock_next" "', argument " "1"" of type '" "DATABLOCK *""'"); 
+  }
+  arg1 = (DATABLOCK *)(argp1);
+  result = (DATABLOCK *)datablock_next(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_datablock_cifvalue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  DATABLOCK *arg1 = (DATABLOCK *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  CIFVALUE *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:datablock_cifvalue",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "datablock_cifvalue" "', argument " "1"" of type '" "DATABLOCK *""'"); 
+  }
+  arg1 = (DATABLOCK *)(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "datablock_cifvalue" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "datablock_cifvalue" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = (int)(val3);
+  result = (CIFVALUE *)datablock_cifvalue(arg1,arg2,arg3);
+  {
+    resultobj = extract_value( result );
+  }
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_datablock_tag_index(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  DATABLOCK *arg1 = (DATABLOCK *) 0 ;
+  char *arg2 = (char *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  ssize_t result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:datablock_tag_index",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "datablock_tag_index" "', argument " "1"" of type '" "DATABLOCK *""'"); 
+  }
+  arg1 = (DATABLOCK *)(argp1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "datablock_tag_index" "', argument " "2"" of type '" "char *""'");
+  }
+  arg2 = (char *)(buf2);
+  result = datablock_tag_index(arg1,arg2);
+  {
+    resultobj = PyInt_FromLong( result );
+  }
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_datablock_overwrite_cifvalue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  DATABLOCK *arg1 = (DATABLOCK *) 0 ;
+  ssize_t arg2 ;
+  ssize_t arg3 ;
+  CIFVALUE *arg4 = (CIFVALUE *) 0 ;
+  cexception_t *arg5 = (cexception_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:datablock_overwrite_cifvalue",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "datablock_overwrite_cifvalue" "', argument " "1"" of type '" "DATABLOCK *""'"); 
+  }
+  arg1 = (DATABLOCK *)(argp1);
+  {
+    arg2 = PyInt_AsLong( obj1 );
+  }
+  {
+    arg3 = PyInt_AsLong( obj2 );
+  }
+  {
+    cif_value_type_t type = CIF_UNKNOWN;
+    char * value = PyString_AsString( PyObject_Str( obj3 ) );
+    if(        PyInt_Check( obj3 ) || PyLong_Check( obj3 ) ) {
+      type = CIF_INT;
+    } else if( PyFloat_Check( obj3 ) ) {
+      type = CIF_FLOAT;
+    } else if( PyString_Check( obj3 ) ) {
+      type = CIF_SQSTRING; // conditions exist here
+    } else if( obj3 == Py_None ) {
+      value = "?";
+      type = CIF_UQSTRING;
+    }
+    arg4 = new_value_from_scalar( value, type, NULL );
+  }
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_cexception_t, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "datablock_overwrite_cifvalue" "', argument " "5"" of type '" "cexception_t *""'"); 
+  }
+  arg5 = (cexception_t *)(argp5);
+  datablock_overwrite_cifvalue(arg1,arg2,arg3,arg4,arg5);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_datablock_insert_cifvalue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  DATABLOCK *arg1 = (DATABLOCK *) 0 ;
+  char *arg2 = (char *) 0 ;
+  CIFVALUE *arg3 = (CIFVALUE *) 0 ;
+  cexception_t *arg4 = (cexception_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:datablock_insert_cifvalue",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "datablock_insert_cifvalue" "', argument " "1"" of type '" "DATABLOCK *""'"); 
+  }
+  arg1 = (DATABLOCK *)(argp1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "datablock_insert_cifvalue" "', argument " "2"" of type '" "char *""'");
+  }
+  arg2 = (char *)(buf2);
+  {
+    cif_value_type_t type = CIF_UNKNOWN;
+    char * value = PyString_AsString( PyObject_Str( obj2 ) );
+    if(        PyInt_Check( obj2 ) || PyLong_Check( obj2 ) ) {
+      type = CIF_INT;
+    } else if( PyFloat_Check( obj2 ) ) {
+      type = CIF_FLOAT;
+    } else if( PyString_Check( obj2 ) ) {
+      type = CIF_SQSTRING; // conditions exist here
+    } else if( obj2 == Py_None ) {
+      value = "?";
+      type = CIF_UQSTRING;
+    }
+    arg3 = new_value_from_scalar( value, type, NULL );
+  }
+  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_cexception_t, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "datablock_insert_cifvalue" "', argument " "4"" of type '" "cexception_t *""'"); 
+  }
+  arg4 = (cexception_t *)(argp4);
+  datablock_insert_cifvalue(arg1,arg2,arg3,arg4);
+  resultobj = SWIG_Py_Void();
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_cif(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  cexception_t *arg1 = (cexception_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  CIF *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:new_cif",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_cexception_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_cif" "', argument " "1"" of type '" "cexception_t *""'"); 
+  }
+  arg1 = (cexception_t *)(argp1);
+  result = (CIF *)new_cif(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_CIF, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_cif_start_datablock(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CIF *arg1 = (CIF *) 0 ;
+  char *arg2 = (char *) 0 ;
+  cexception_t *arg3 = (cexception_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:cif_start_datablock",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_CIF, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "cif_start_datablock" "', argument " "1"" of type '" "CIF *""'"); 
+  }
+  arg1 = (CIF *)(argp1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "cif_start_datablock" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = (char *)(buf2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_cexception_t, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "cif_start_datablock" "', argument " "3"" of type '" "cexception_t *""'"); 
+  }
+  arg3 = (cexception_t *)(argp3);
+  cif_start_datablock(arg1,(char const *)arg2,arg3);
+  resultobj = SWIG_Py_Void();
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_cif_append_datablock(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CIF *arg1 = (CIF *) 0 ;
+  DATABLOCK *arg2 = (DATABLOCK *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:cif_append_datablock",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_CIF, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "cif_append_datablock" "', argument " "1"" of type '" "CIF *""'"); 
+  }
+  arg1 = (CIF *)(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "cif_append_datablock" "', argument " "2"" of type '" "DATABLOCK *""'"); 
+  }
+  arg2 = (DATABLOCK *)(argp2);
+  cif_append_datablock(arg1,arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_cif_print(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CIF *arg1 = (CIF *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:cif_print",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_CIF, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "cif_print" "', argument " "1"" of type '" "CIF *""'"); 
+  }
+  arg1 = (CIF *)(argp1);
+  cif_print(arg1);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_cif_datablock_list(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CIF *arg1 = (CIF *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  DATABLOCK *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:cif_datablock_list",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_CIF, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "cif_datablock_list" "', argument " "1"" of type '" "CIF *""'"); 
+  }
+  arg1 = (CIF *)(argp1);
+  result = (DATABLOCK *)cif_datablock_list(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_cif_from_cif_file(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  cif_option_t arg2 ;
+  cexception_t *arg3 = (cexception_t *) 0 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  CIF *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:new_cif_from_cif_file",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_cif_from_cif_file" "', argument " "1"" of type '" "char *""'");
+  }
+  arg1 = (char *)(buf1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_cif_from_cif_file" "', argument " "2"" of type '" "cif_option_t""'");
+  } 
+  arg2 = (cif_option_t)(val2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_cexception_t, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "new_cif_from_cif_file" "', argument " "3"" of type '" "cexception_t *""'"); 
+  }
+  arg3 = (cexception_t *)(argp3);
+  result = (CIF *)new_cif_from_cif_file(arg1,arg2,arg3);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_CIF, 0 |  0 );
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) free((char*)buf1);
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_extract_value(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  CIFVALUE *arg1 = (CIFVALUE *) 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:extract_value",&obj0)) SWIG_fail;
+  {
+    cif_value_type_t type = CIF_UNKNOWN;
+    char * value = PyString_AsString( PyObject_Str( obj0 ) );
+    if(        PyInt_Check( obj0 ) || PyLong_Check( obj0 ) ) {
+      type = CIF_INT;
+    } else if( PyFloat_Check( obj0 ) ) {
+      type = CIF_FLOAT;
+    } else if( PyString_Check( obj0 ) ) {
+      type = CIF_SQSTRING; // conditions exist here
+    } else if( obj0 == Py_None ) {
+      value = "?";
+      type = CIF_UQSTRING;
+    }
+    arg1 = new_value_from_scalar( value, type, NULL );
+  }
+  result = (PyObject *)extract_value(arg1);
+  resultobj = result;
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
 	 { (char *)"parse_cif", _wrap_parse_cif, METH_VARARGS, NULL},
+	 { (char *)"cif_option_default", _wrap_cif_option_default, METH_VARARGS, NULL},
+	 { (char *)"new_value_from_scalar", _wrap_new_value_from_scalar, METH_VARARGS, NULL},
+	 { (char *)"value_dump", _wrap_value_dump, METH_VARARGS, NULL},
+	 { (char *)"new_datablock", _wrap_new_datablock, METH_VARARGS, NULL},
+	 { (char *)"datablock_next", _wrap_datablock_next, METH_VARARGS, NULL},
+	 { (char *)"datablock_cifvalue", _wrap_datablock_cifvalue, METH_VARARGS, NULL},
+	 { (char *)"datablock_tag_index", _wrap_datablock_tag_index, METH_VARARGS, NULL},
+	 { (char *)"datablock_overwrite_cifvalue", _wrap_datablock_overwrite_cifvalue, METH_VARARGS, NULL},
+	 { (char *)"datablock_insert_cifvalue", _wrap_datablock_insert_cifvalue, METH_VARARGS, NULL},
+	 { (char *)"new_cif", _wrap_new_cif, METH_VARARGS, NULL},
+	 { (char *)"cif_start_datablock", _wrap_cif_start_datablock, METH_VARARGS, NULL},
+	 { (char *)"cif_append_datablock", _wrap_cif_append_datablock, METH_VARARGS, NULL},
+	 { (char *)"cif_print", _wrap_cif_print, METH_VARARGS, NULL},
+	 { (char *)"cif_datablock_list", _wrap_cif_datablock_list, METH_VARARGS, NULL},
+	 { (char *)"new_cif_from_cif_file", _wrap_new_cif_from_cif_file, METH_VARARGS, NULL},
+	 { (char *)"extract_value", _wrap_extract_value, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
+static swig_type_info _swigt__p_CIF = {"_p_CIF", "CIF *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_CIFVALUE = {"_p_CIFVALUE", "CIFVALUE *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_DATABLOCK = {"_p_DATABLOCK", "DATABLOCK *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_cexception_t = {"_p_cexception_t", "cexception_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_cif_option_t = {"_p_cif_option_t", "enum cif_option_t *|cif_option_t *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_cif_value_type_t = {"_p_cif_value_type_t", "cif_value_type_t *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_ssize_t = {"_p_ssize_t", "ssize_t *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
+  &_swigt__p_CIF,
+  &_swigt__p_CIFVALUE,
+  &_swigt__p_DATABLOCK,
+  &_swigt__p_cexception_t,
   &_swigt__p_char,
+  &_swigt__p_cif_option_t,
+  &_swigt__p_cif_value_type_t,
+  &_swigt__p_ssize_t,
 };
 
+static swig_cast_info _swigc__p_CIF[] = {  {&_swigt__p_CIF, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_CIFVALUE[] = {  {&_swigt__p_CIFVALUE, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_DATABLOCK[] = {  {&_swigt__p_DATABLOCK, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_cexception_t[] = {  {&_swigt__p_cexception_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_cif_option_t[] = {  {&_swigt__p_cif_option_t, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_cif_value_type_t[] = {  {&_swigt__p_cif_value_type_t, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_ssize_t[] = {  {&_swigt__p_ssize_t, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
+  _swigc__p_CIF,
+  _swigc__p_CIFVALUE,
+  _swigc__p_DATABLOCK,
+  _swigc__p_cexception_t,
   _swigc__p_char,
+  _swigc__p_cif_option_t,
+  _swigc__p_cif_value_type_t,
+  _swigc__p_ssize_t,
 };
 
 

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
 **$Author: andrius $
-**$Date: 2017-11-07 11:53:10 +0200 (Tue, 07 Nov 2017) $ 
-**$Revision: 5724 $
+**$Date: 2017-11-10 11:33:14 +0200 (Fri, 10 Nov 2017) $ 
+**$Revision: 5759 $
 **$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cif.h $
 \*---------------------------------------------------------------------------*/
 
@@ -47,6 +47,8 @@ CIFMESSAGE *cif_insert_message( CIF *cif, CIFMESSAGE *message );
 
 void cif_start_datablock( CIF * volatile cif, const char *name,
                           cexception_t *ex );
+
+void cif_append_datablock( CIF * volatile cif, DATABLOCK *datablock );
 
 void cif_start_save_frame( CIF * volatile cif, const char *name,
                           cexception_t *ex );

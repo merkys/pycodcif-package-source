@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: pycodcif
-Version: 0.8.9
+Version: 0.8.9.dev1
 Summary: COD CIF parser
 Home-page: http://wiki.crystallography.net/cod-tools/CIF-parser
 Author: Andrius Merkys
