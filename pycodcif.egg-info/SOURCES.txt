@@ -49,6 +49,7 @@ pycodcif.egg-info/PKG-INFO
 pycodcif.egg-info/SOURCES.txt
 pycodcif.egg-info/dependency_links.txt
 pycodcif.egg-info/top_level.txt
+test/test_build_cif.py
 test/test_unicode.py
 test/test_upstream.py
 tests/cases/cif_parser_test_001.inp

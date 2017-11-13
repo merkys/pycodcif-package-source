@@ -408,13 +408,20 @@ class CifFile(object):
 
     def __getitem__(self, key):
         datablock = cif_datablock_list( self._cif )
-        for i in range(0,key):
+        if isinstance(key, int):
+            for i in range(0,key):
+                if datablock is None:
+                    raise IndexError('list index out of range')
+                datablock = datablock_next( datablock )
             if datablock is None:
                 raise IndexError('list index out of range')
-            datablock = datablock_next( datablock )
-        if datablock is None:
-            raise IndexError('list index out of range')
-        return datablock
+            return CifDatablock(datablock = datablock)
+        else:
+            while datablock_name( datablock ) != key:
+                datablock = datablock_next( datablock )
+                if datablock is None:
+                    raise KeyError(key)
+            return CifDatablock(datablock = datablock)
 
     def __str__(self):
         with capture() as output:
@@ -426,19 +433,57 @@ class CifFile(object):
         cif_append_datablock( self._cif, datablock._datablock )
 
 class CifDatablock(object):
-    def __init__(self, name):
-        self._datablock = new_datablock( name, None, None )
+    def __init__(self, name = None, datablock = None):
+        if datablock is None:
+            self._datablock = new_datablock( name, None, None )
+        else:
+            self._datablock = datablock
 
     def __getitem__(self, key):
         tag_index = datablock_tag_index( self._datablock, key )
         if tag_index == -1:
             raise KeyError(key)
-        return extract_value( datablock_cifvalue( self._datablock, tag_index, 0 ) )
+        values = []
+        for i in range(0, datablock_value_length( self._datablock,
+                                                  tag_index )):
+            values.append( extract_value( datablock_cifvalue( self._datablock,
+                                                              tag_index, i ) ) )
+        return values
 
     def __setitem__(self, key, value):
+        if not isinstance(value, list):
+            value = [ value ]
         tag_index = datablock_tag_index( self._datablock, key )
         if tag_index == -1:
-            datablock_insert_cifvalue( self._datablock, key, value, None )
+            if len(value) == 1:
+                datablock_insert_cifvalue( self._datablock, key, value[0], None )
+            else:
+                self.add_loop( [ key ], [ [x] for x in value ] )
+        elif len(value) > 1:
+            raise ValueError( "can not overwrite data item with a loop" )
+        elif datablock_tag_in_loop( self._datablock, tag_index ) != -1:
+            raise ValueError( "can not overwrite a loop" )
+        else:
+            datablock_overwrite_cifvalue( self._datablock, tag_index, 0, value[0], None )
+
+    def keys(self):
+        length = datablock_length( self._datablock )
+        return [ datablock_tag( self._datablock, x) for x in range(0, length) ]
+
+    def add_loop(self, keys, values):
+        for key in keys:
+            if key in self.keys():
+                raise KeyError( "data item '{}' already exists".format(key) )
+        datablock_start_loop( self._datablock )
+        for i in range(0,len(values)):
+            for j, key in enumerate(keys):
+                if i == 0:
+                    datablock_insert_cifvalue( self._datablock, key,
+                                               values[i][j], None )
+                else:
+                    datablock_push_loop_cifvalue( self._datablock,
+                                                  values[i][j], None )
+        datablock_finish_loop( self._datablock, None )
 
 import contextlib
 
@@ -482,6 +527,14 @@ def datablock_next(datablock):
     return _pycodcif.datablock_next(datablock)
 datablock_next = _pycodcif.datablock_next
 
+def datablock_length(datablock):
+    return _pycodcif.datablock_length(datablock)
+datablock_length = _pycodcif.datablock_length
+
+def datablock_value_lengths(datablock):
+    return _pycodcif.datablock_value_lengths(datablock)
+datablock_value_lengths = _pycodcif.datablock_value_lengths
+
 def datablock_cifvalue(datablock, tag_nr, val_nr):
     return _pycodcif.datablock_cifvalue(datablock, tag_nr, val_nr)
 datablock_cifvalue = _pycodcif.datablock_cifvalue
@@ -497,6 +550,22 @@ datablock_overwrite_cifvalue = _pycodcif.datablock_overwrite_cifvalue
 def datablock_insert_cifvalue(datablock, tag, value, ex):
     return _pycodcif.datablock_insert_cifvalue(datablock, tag, value, ex)
 datablock_insert_cifvalue = _pycodcif.datablock_insert_cifvalue
+
+def datablock_start_loop(datablock):
+    return _pycodcif.datablock_start_loop(datablock)
+datablock_start_loop = _pycodcif.datablock_start_loop
+
+def datablock_finish_loop(datablock, ex):
+    return _pycodcif.datablock_finish_loop(datablock, ex)
+datablock_finish_loop = _pycodcif.datablock_finish_loop
+
+def datablock_push_loop_cifvalue(datablock, value, ex):
+    return _pycodcif.datablock_push_loop_cifvalue(datablock, value, ex)
+datablock_push_loop_cifvalue = _pycodcif.datablock_push_loop_cifvalue
+
+def datablock_name(datablock):
+    return _pycodcif.datablock_name(datablock)
+datablock_name = _pycodcif.datablock_name
 
 def new_cif(ex):
     return _pycodcif.new_cif(ex)
@@ -525,6 +594,18 @@ new_cif_from_cif_file = _pycodcif.new_cif_from_cif_file
 def extract_value(cifvalue):
     return _pycodcif.extract_value(cifvalue)
 extract_value = _pycodcif.extract_value
+
+def datablock_value_length(datablock, tag_index):
+    return _pycodcif.datablock_value_length(datablock, tag_index)
+datablock_value_length = _pycodcif.datablock_value_length
+
+def datablock_tag(datablock, tag_index):
+    return _pycodcif.datablock_tag(datablock, tag_index)
+datablock_tag = _pycodcif.datablock_tag
+
+def datablock_tag_in_loop(datablock, tag_index):
+    return _pycodcif.datablock_tag_in_loop(datablock, tag_index)
+datablock_tag_in_loop = _pycodcif.datablock_tag_in_loop
 # This file is compatible with both classic and new-style classes.
 
 

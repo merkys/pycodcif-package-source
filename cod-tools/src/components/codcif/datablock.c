@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*\
 **$Author: andrius $
-**$Date: 2017-11-07 11:53:10 +0200 (Tue, 07 Nov 2017) $ 
-**$Revision: 5724 $
+**$Date: 2017-11-13 10:21:09 +0200 (Mon, 13 Nov 2017) $ 
+**$Revision: 5774 $
 **$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/datablock.c $
 \*---------------------------------------------------------------------------*/
 
@@ -463,12 +463,8 @@ void datablock_overwrite_cifvalue( DATABLOCK * datablock, ssize_t tag_nr,
     cexception_t inner;
 
     cexception_guard( inner ) {
-        if( value ) {
-            delete_value( datablock_cifvalue( datablock, tag_nr, val_nr ) );
-            datablock->values[tag_nr][val_nr] = value;
-        } else {
-            datablock->values[tag_nr][val_nr] = NULL;
-        }
+        delete_value( datablock_cifvalue( datablock, tag_nr, val_nr ) );
+        datablock->values[tag_nr][val_nr] = value;
     }
     cexception_catch {
         cexception_reraise( inner, ex );

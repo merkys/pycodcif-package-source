@@ -315,3 +315,15 @@ PyObject * parse_cif( char * fname, char * prog, PyObject * opt )
     PyDict_SetItemString( ret, "nerrors", PyInt_FromLong( nerrors ) );
     return( ret );
 }
+
+ssize_t datablock_value_length( DATABLOCK *datablock, size_t tag_index ) {
+    return datablock_value_lengths( datablock )[tag_index];
+}
+
+char *datablock_tag( DATABLOCK *datablock, size_t tag_index ) {
+    return datablock_tags( datablock )[tag_index];
+}
+
+int datablock_tag_in_loop( DATABLOCK *datablock, size_t tag_index ) {
+    return datablock_in_loop( datablock )[tag_index];
+}
