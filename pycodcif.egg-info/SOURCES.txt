@@ -1,5 +1,7 @@
 MANIFEST.in
 setup.py
+cod-tools/src/components/codcif/buffer.c
+cod-tools/src/components/codcif/buffer.h
 cod-tools/src/components/codcif/cif.c
 cod-tools/src/components/codcif/cif.h
 cod-tools/src/components/codcif/cif2_grammar.tab.c
@@ -52,6 +54,7 @@ pycodcif.egg-info/top_level.txt
 test/test_build_cif.py
 test/test_unicode.py
 test/test_upstream.py
+test/test_upstream_shell.py
 tests/cases/cif_parser_test_001.inp
 tests/cases/cif_parser_test_002.inp
 tests/cases/cif_parser_test_003.inp
@@ -412,3 +415,11 @@ tests/outputs/cif_parser_test_114.out
 tests/outputs/cif_parser_test_116.out
 tests/outputs/cif_parser_test_117.out
 tests/outputs/cif_parser_test_118.out
+tests/shoutputs/build_cif_001.out
+tests/shoutputs/build_cif_002.out
+tests/shoutputs/build_cif_003.out
+tests/shoutputs/tag_index_002.out
+tests/shtests/build_cif_001.sh
+tests/shtests/build_cif_002.sh
+tests/shtests/build_cif_003.sh
+tests/shtests/tag_index_002.sh

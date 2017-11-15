@@ -8,6 +8,6 @@ from .pycodcif import (parse, CifParserException, CifFile, CifDatablock,
                        datablock_overwrite_cifvalue,
                        datablock_insert_cifvalue,
 
-                       new_cif, cif_start_datablock, cif_print, cif_datablock_list,
+                       new_cif, cif_start_datablock, cif_datablock_list,
 
                        new_cif_from_cif_file)

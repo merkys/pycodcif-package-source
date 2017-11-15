@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------*\
 * $Author: andrius $
-* $Date: 2017-04-12 13:39:05 +0300 (Wed, 12 Apr 2017) $ 
-* $Revision: 5195 $
-* $URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/ciflist.c $
+* $Date: 2017-11-14 09:23:41 +0200 (Tue, 14 Nov 2017) $ 
+* $Revision: 5795 $
+* $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/ciflist.c $
 \*-------------------------------------------------------------------------*/
 
 #include <string.h>
@@ -12,6 +12,7 @@
 #include <stringx.h>
 #include <ciflist.h>
 #include <cifvalue.h>
+#include <buffer.h>
 
 #define DELTA_CAPACITY (100)
 
@@ -41,16 +42,20 @@ CIFLIST *new_list( cexception_t *ex )
     return list;
 }
 
-void list_dump( CIFLIST *list )
-{
+void list_sprint( BUFFER *buffer, CIFLIST *list ) {
     assert( list );
 
-    printf( " [" );
+    bprint( buffer, " [", NULL );
     size_t i;
     for( i = 0; i < list->length; i++ ) {
-        value_dump( list->values[i] );
+        value_sprint( buffer, list->values[i] );
     }
-    printf( " ]" );
+    bprint( buffer, " ]", NULL );
+}
+
+void list_dump( CIFLIST *list )
+{
+    list_sprint( NULL, list );
 }
 
 void list_push( CIFLIST *list, CIFVALUE *value, cexception_t *ex )

@@ -1,16 +1,18 @@
 /*-------------------------------------------------------------------------*\
 * $Author: andrius $
-* $Date: 2017-04-12 13:39:05 +0300 (Wed, 12 Apr 2017) $ 
-* $Revision: 5195 $
-* $URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cifvalue.c $
+* $Date: 2017-11-14 09:23:41 +0200 (Tue, 14 Nov 2017) $ 
+* $Revision: 5795 $
+* $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/cifvalue.c $
 \*-------------------------------------------------------------------------*/
 
 #include <cexceptions.h>
 #include <assert.h>
+#include <string.h>
 #include <allocx.h>
 #include <cifvalue.h>
 #include <ciflist.h>
 #include <ciftable.h>
+#include <buffer.h>
 
 struct CIFVALUE {
     union {
@@ -59,33 +61,51 @@ CIFVALUE *new_value_from_table( CIFTABLE *table, cexception_t *ex )
     return value;
 }
 
-void value_dump( CIFVALUE *value ) {
+void value_sprint( BUFFER *buffer, CIFVALUE *value ) {
     assert( value );
+    char *buf = NULL;
     switch( value->type ) {
         case CIF_LIST:
-            list_dump( value_list( value ) );
+            list_sprint( buffer, value_list( value ) );
             break;
         case CIF_TABLE:
-            table_dump( value_table( value ) );
+            table_sprint( buffer, value_table( value ) );
             break;
         case CIF_SQSTRING:
-            printf( " '%s'", value_scalar( value ) );
+            buf = callocx( strlen(value_scalar( value ))+4, sizeof(char), NULL );
+            sprintf( buf, " '%s'", value_scalar( value ) );
+            bprint( buffer, buf, NULL );
             break;
         case CIF_DQSTRING:
-            printf( " \"%s\"", value_scalar( value ) );
+            buf = callocx( strlen(value_scalar( value ))+4, sizeof(char), NULL );
+            sprintf( buf, " \"%s\"", value_scalar( value ) );
+            bprint( buffer, buf, NULL );
             break;
         case CIF_SQ3STRING:
-            printf( " '''%s'''", value_scalar( value ) );
+            buf = callocx( strlen(value_scalar( value ))+8, sizeof(char), NULL );
+            sprintf( buf, " '''%s'''", value_scalar( value ) );
+            bprint( buffer, buf, NULL );
             break;
         case CIF_DQ3STRING:
-            printf( " \"\"\"%s\"\"\"", value_scalar( value ) );
+            buf = callocx( strlen(value_scalar( value ))+8, sizeof(char), NULL );
+            sprintf( buf, " \"\"\"%s\"\"\"", value_scalar( value ) );
+            bprint( buffer, buf, NULL );
             break;
         case CIF_TEXT:
-            printf( "\n;%s\n;\n", value_scalar( value ) );
+            buf = callocx( strlen(value_scalar( value ))+6, sizeof(char), NULL );
+            sprintf( buf, "\n;%s\n;\n", value_scalar( value ) );
+            bprint( buffer, buf, NULL );
             break;
         default:
-            printf( " %s", value_scalar( value ) );
+            buf = callocx( strlen(value_scalar( value ))+2, sizeof(char), NULL );
+            sprintf( buf, " %s", value_scalar( value ) );
+            bprint( buffer, buf, NULL );
     }
+    if( buf ) { freex( buf ); }
+}
+
+void value_dump( CIFVALUE *value ) {
+    value_sprint( NULL, value );
 }
 
 cif_value_type_t value_type( CIFVALUE *value ) {

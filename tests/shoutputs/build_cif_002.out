@@ -1,0 +1,87 @@
+data_new
+loop_
+    _a
+    _b
+ 1 2
+ 3 4
+loop_
+    _c
+    _d
+    _e
+ 1 2 3
+ 3 4 4
+ 'c' 'd' 'e'
+
+"data item '_a' already exists"
+data_new
+loop_
+    _a
+    _b
+ 1 2
+ 3 4
+loop_
+    _c
+    _d
+    _e
+ 1 2 3
+ 3 4 4
+ 'c' 'd' 'e'
+_overwritten                     'first'
+
+data_new
+loop_
+    _a
+    _b
+ 1 2
+ 3 4
+loop_
+    _c
+    _d
+    _e
+ 1 2 3
+ 3 4 4
+ 'c' 'd' 'e'
+_overwritten                     'second'
+
+data_new
+loop_
+    _a
+    _b
+ 1 2
+ 3 4
+loop_
+    _d
+    _e
+ 2 3
+ 4 4
+ 'd' 'e'
+loop_
+    _simple_loop
+ 10
+ 12
+ 13
+
+data_new
+loop_
+    _a
+    _b
+ 1 2
+ 3 4
+loop_
+    _d
+ 2
+ 4
+ 'd'
+loop_
+    _simple_loop
+ 10
+ 12
+ 13
+
+data_new
+loop_
+    _a
+    _b
+ 1 2
+ 3 4
+

@@ -2982,16 +2982,17 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_CIF swig_types[0]
-#define SWIGTYPE_p_CIFVALUE swig_types[1]
-#define SWIGTYPE_p_DATABLOCK swig_types[2]
-#define SWIGTYPE_p_cexception_t swig_types[3]
-#define SWIGTYPE_p_char swig_types[4]
-#define SWIGTYPE_p_cif_option_t swig_types[5]
-#define SWIGTYPE_p_cif_value_type_t swig_types[6]
-#define SWIGTYPE_p_ssize_t swig_types[7]
-static swig_type_info *swig_types[9];
-static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
+#define SWIGTYPE_p_BUFFER swig_types[0]
+#define SWIGTYPE_p_CIF swig_types[1]
+#define SWIGTYPE_p_CIFVALUE swig_types[2]
+#define SWIGTYPE_p_DATABLOCK swig_types[3]
+#define SWIGTYPE_p_cexception_t swig_types[4]
+#define SWIGTYPE_p_char swig_types[5]
+#define SWIGTYPE_p_cif_option_t swig_types[6]
+#define SWIGTYPE_p_cif_value_type_t swig_types[7]
+#define SWIGTYPE_p_ssize_t swig_types[8]
+static swig_type_info *swig_types[10];
+static swig_module_info swig_module = {swig_types, 9, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3034,6 +3035,13 @@ static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
 
     cif_option_t cif_option_default();
 
+    // from buffer.h:
+    #include <buffer.h>
+
+    BUFFER *new_buffer( cexception_t *ex );
+    void bprint( BUFFER *buffer, char *string, cexception_t *ex );
+    char *buffer_string( BUFFER *buffer );
+
     // from cifvalue.h:
     #include <cifvalue.h>
 
@@ -3052,6 +3060,7 @@ static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
     ssize_t datablock_tag_index( DATABLOCK *datablock, char *tag );
     void datablock_overwrite_cifvalue( DATABLOCK * datablock, ssize_t tag_nr,
         ssize_t val_nr, CIFVALUE *value, cexception_t *ex );
+    void datablock_delete_tag( DATABLOCK *datablock, ssize_t tag_nr );
     void datablock_insert_cifvalue( DATABLOCK * datablock, char *tag,
                                     CIFVALUE *value, cexception_t *ex );
     void datablock_start_loop( DATABLOCK *datablock );
@@ -3067,7 +3076,7 @@ static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
     void cif_start_datablock( CIF *cif, const char *name,
                               cexception_t *ex );
     void cif_append_datablock( CIF * cif, DATABLOCK *datablock );
-    void cif_print( CIF *cif );
+    void cif_sprint( BUFFER * buffer, CIF * cif );
     DATABLOCK * cif_datablock_list( CIF *cif );
 
     // from cif_compiler.h:
@@ -3076,6 +3085,7 @@ static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
     CIF *new_cif_from_cif_file( char *filename, cif_option_t co, cexception_t *ex );
 
     PyObject *extract_value( CIFVALUE * cifvalue );
+    cif_option_t extract_parser_options( PyObject * options );
     ssize_t datablock_value_length( DATABLOCK *datablock, size_t tag_index );
     char *datablock_tag( DATABLOCK *datablock, size_t tag_index );
     int datablock_tag_in_loop( DATABLOCK *datablock, size_t tag_index );
@@ -3200,6 +3210,38 @@ SWIGINTERNINLINE PyObject*
   SWIG_From_int  (int value)
 {
   return PyInt_FromLong((long) value);
+}
+
+
+SWIGINTERNINLINE PyObject *
+SWIG_FromCharPtrAndSize(const char* carray, size_t size)
+{
+  if (carray) {
+    if (size > INT_MAX) {
+      swig_type_info* pchar_descriptor = SWIG_pchar_descriptor();
+      return pchar_descriptor ? 
+	SWIG_InternalNewPointerObj((char *)(carray), pchar_descriptor, 0) : SWIG_Py_Void();
+    } else {
+#if PY_VERSION_HEX >= 0x03000000
+#if PY_VERSION_HEX >= 0x03010000
+      return PyUnicode_DecodeUTF8(carray, (Py_ssize_t)(size), "surrogateescape");
+#else
+      return PyUnicode_FromStringAndSize(carray, (Py_ssize_t)(size));
+#endif
+#else
+      return PyString_FromStringAndSize(carray, (Py_ssize_t)(size));
+#endif
+    }
+  } else {
+    return SWIG_Py_Void();
+  }
+}
+
+
+SWIGINTERNINLINE PyObject * 
+SWIG_FromCharPtr(const char *cptr)
+{ 
+  return SWIG_FromCharPtrAndSize(cptr, (cptr ? strlen(cptr) : 0));
 }
 
 
@@ -3372,38 +3414,6 @@ SWIG_AsVal_int (PyObject * obj, int *val)
 }
 
 
-SWIGINTERNINLINE PyObject *
-SWIG_FromCharPtrAndSize(const char* carray, size_t size)
-{
-  if (carray) {
-    if (size > INT_MAX) {
-      swig_type_info* pchar_descriptor = SWIG_pchar_descriptor();
-      return pchar_descriptor ? 
-	SWIG_InternalNewPointerObj((char *)(carray), pchar_descriptor, 0) : SWIG_Py_Void();
-    } else {
-#if PY_VERSION_HEX >= 0x03000000
-#if PY_VERSION_HEX >= 0x03010000
-      return PyUnicode_DecodeUTF8(carray, (Py_ssize_t)(size), "surrogateescape");
-#else
-      return PyUnicode_FromStringAndSize(carray, (Py_ssize_t)(size));
-#endif
-#else
-      return PyString_FromStringAndSize(carray, (Py_ssize_t)(size));
-#endif
-    }
-  } else {
-    return SWIG_Py_Void();
-  }
-}
-
-
-SWIGINTERNINLINE PyObject * 
-SWIG_FromCharPtr(const char *cptr)
-{ 
-  return SWIG_FromCharPtrAndSize(cptr, (cptr ? strlen(cptr) : 0));
-}
-
-
 SWIGINTERN int
 SWIG_AsVal_unsigned_SS_long (PyObject *obj, unsigned long *val) 
 {
@@ -3511,6 +3521,92 @@ SWIGINTERN PyObject *_wrap_cif_option_default(PyObject *SWIGUNUSEDPARM(self), Py
   if (!PyArg_ParseTuple(args,(char *)":cif_option_default")) SWIG_fail;
   result = (cif_option_t)cif_option_default();
   resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_new_buffer(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  cexception_t *arg1 = (cexception_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  BUFFER *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:new_buffer",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_cexception_t, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_buffer" "', argument " "1"" of type '" "cexception_t *""'"); 
+  }
+  arg1 = (cexception_t *)(argp1);
+  result = (BUFFER *)new_buffer(arg1);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BUFFER, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_bprint(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  BUFFER *arg1 = (BUFFER *) 0 ;
+  char *arg2 = (char *) 0 ;
+  cexception_t *arg3 = (cexception_t *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:bprint",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_BUFFER, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "bprint" "', argument " "1"" of type '" "BUFFER *""'"); 
+  }
+  arg1 = (BUFFER *)(argp1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "bprint" "', argument " "2"" of type '" "char *""'");
+  }
+  arg2 = (char *)(buf2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_cexception_t, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "bprint" "', argument " "3"" of type '" "cexception_t *""'"); 
+  }
+  arg3 = (cexception_t *)(argp3);
+  bprint(arg1,arg2,arg3);
+  resultobj = SWIG_Py_Void();
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) free((char*)buf2);
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_buffer_string(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  BUFFER *arg1 = (BUFFER *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  char *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:buffer_string",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_BUFFER, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "buffer_string" "', argument " "1"" of type '" "BUFFER *""'"); 
+  }
+  arg1 = (BUFFER *)(argp1);
+  result = (char *)buffer_string(arg1);
+  resultobj = SWIG_FromCharPtr((const char *)result);
   return resultobj;
 fail:
   return NULL;
@@ -3855,6 +3951,32 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_datablock_delete_tag(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  DATABLOCK *arg1 = (DATABLOCK *) 0 ;
+  ssize_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:datablock_delete_tag",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_DATABLOCK, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "datablock_delete_tag" "', argument " "1"" of type '" "DATABLOCK *""'"); 
+  }
+  arg1 = (DATABLOCK *)(argp1);
+  {
+    arg2 = PyInt_AsLong( obj1 );
+  }
+  datablock_delete_tag(arg1,arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_datablock_insert_cifvalue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   DATABLOCK *arg1 = (DATABLOCK *) 0 ;
@@ -4130,20 +4252,29 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_cif_print(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_cif_sprint(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  CIF *arg1 = (CIF *) 0 ;
+  BUFFER *arg1 = (BUFFER *) 0 ;
+  CIF *arg2 = (CIF *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
   PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:cif_print",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_CIF, 0 |  0 );
+  if (!PyArg_ParseTuple(args,(char *)"OO:cif_sprint",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_BUFFER, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "cif_print" "', argument " "1"" of type '" "CIF *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "cif_sprint" "', argument " "1"" of type '" "BUFFER *""'"); 
   }
-  arg1 = (CIF *)(argp1);
-  cif_print(arg1);
+  arg1 = (BUFFER *)(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_CIF, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "cif_sprint" "', argument " "2"" of type '" "CIF *""'"); 
+  }
+  arg2 = (CIF *)(argp2);
+  cif_sprint(arg1,arg2);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -4181,8 +4312,6 @@ SWIGINTERN PyObject *_wrap_new_cif_from_cif_file(PyObject *SWIGUNUSEDPARM(self),
   int res1 ;
   char *buf1 = 0 ;
   int alloc1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
   void *argp3 = 0 ;
   int res3 = 0 ;
   PyObject * obj0 = 0 ;
@@ -4196,11 +4325,9 @@ SWIGINTERN PyObject *_wrap_new_cif_from_cif_file(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_cif_from_cif_file" "', argument " "1"" of type '" "char *""'");
   }
   arg1 = (char *)(buf1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_cif_from_cif_file" "', argument " "2"" of type '" "cif_option_t""'");
-  } 
-  arg2 = (cif_option_t)(val2);
+  {
+    arg2 = extract_parser_options( obj1 );
+  }
   res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_cexception_t, 0 |  0 );
   if (!SWIG_IsOK(res3)) {
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "new_cif_from_cif_file" "', argument " "3"" of type '" "cexception_t *""'"); 
@@ -4241,6 +4368,22 @@ SWIGINTERN PyObject *_wrap_extract_value(PyObject *SWIGUNUSEDPARM(self), PyObjec
   }
   result = (PyObject *)extract_value(arg1);
   resultobj = result;
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_extract_parser_options(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  PyObject *arg1 = (PyObject *) 0 ;
+  PyObject * obj0 = 0 ;
+  cif_option_t result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:extract_parser_options",&obj0)) SWIG_fail;
+  arg1 = obj0;
+  result = (cif_option_t)extract_parser_options(arg1);
+  resultobj = SWIG_From_int((int)(result));
   return resultobj;
 fail:
   return NULL;
@@ -4346,6 +4489,9 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
 	 { (char *)"parse_cif", _wrap_parse_cif, METH_VARARGS, NULL},
 	 { (char *)"cif_option_default", _wrap_cif_option_default, METH_VARARGS, NULL},
+	 { (char *)"new_buffer", _wrap_new_buffer, METH_VARARGS, NULL},
+	 { (char *)"bprint", _wrap_bprint, METH_VARARGS, NULL},
+	 { (char *)"buffer_string", _wrap_buffer_string, METH_VARARGS, NULL},
 	 { (char *)"new_value_from_scalar", _wrap_new_value_from_scalar, METH_VARARGS, NULL},
 	 { (char *)"value_dump", _wrap_value_dump, METH_VARARGS, NULL},
 	 { (char *)"new_datablock", _wrap_new_datablock, METH_VARARGS, NULL},
@@ -4355,6 +4501,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"datablock_cifvalue", _wrap_datablock_cifvalue, METH_VARARGS, NULL},
 	 { (char *)"datablock_tag_index", _wrap_datablock_tag_index, METH_VARARGS, NULL},
 	 { (char *)"datablock_overwrite_cifvalue", _wrap_datablock_overwrite_cifvalue, METH_VARARGS, NULL},
+	 { (char *)"datablock_delete_tag", _wrap_datablock_delete_tag, METH_VARARGS, NULL},
 	 { (char *)"datablock_insert_cifvalue", _wrap_datablock_insert_cifvalue, METH_VARARGS, NULL},
 	 { (char *)"datablock_start_loop", _wrap_datablock_start_loop, METH_VARARGS, NULL},
 	 { (char *)"datablock_finish_loop", _wrap_datablock_finish_loop, METH_VARARGS, NULL},
@@ -4363,10 +4510,11 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"new_cif", _wrap_new_cif, METH_VARARGS, NULL},
 	 { (char *)"cif_start_datablock", _wrap_cif_start_datablock, METH_VARARGS, NULL},
 	 { (char *)"cif_append_datablock", _wrap_cif_append_datablock, METH_VARARGS, NULL},
-	 { (char *)"cif_print", _wrap_cif_print, METH_VARARGS, NULL},
+	 { (char *)"cif_sprint", _wrap_cif_sprint, METH_VARARGS, NULL},
 	 { (char *)"cif_datablock_list", _wrap_cif_datablock_list, METH_VARARGS, NULL},
 	 { (char *)"new_cif_from_cif_file", _wrap_new_cif_from_cif_file, METH_VARARGS, NULL},
 	 { (char *)"extract_value", _wrap_extract_value, METH_VARARGS, NULL},
+	 { (char *)"extract_parser_options", _wrap_extract_parser_options, METH_VARARGS, NULL},
 	 { (char *)"datablock_value_length", _wrap_datablock_value_length, METH_VARARGS, NULL},
 	 { (char *)"datablock_tag", _wrap_datablock_tag, METH_VARARGS, NULL},
 	 { (char *)"datablock_tag_in_loop", _wrap_datablock_tag_in_loop, METH_VARARGS, NULL},
@@ -4376,6 +4524,7 @@ static PyMethodDef SwigMethods[] = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
+static swig_type_info _swigt__p_BUFFER = {"_p_BUFFER", "BUFFER *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_CIF = {"_p_CIF", "CIF *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_CIFVALUE = {"_p_CIFVALUE", "CIFVALUE *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_DATABLOCK = {"_p_DATABLOCK", "DATABLOCK *", 0, 0, (void*)0, 0};
@@ -4386,6 +4535,7 @@ static swig_type_info _swigt__p_cif_value_type_t = {"_p_cif_value_type_t", "cif_
 static swig_type_info _swigt__p_ssize_t = {"_p_ssize_t", "ssize_t *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
+  &_swigt__p_BUFFER,
   &_swigt__p_CIF,
   &_swigt__p_CIFVALUE,
   &_swigt__p_DATABLOCK,
@@ -4396,6 +4546,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_ssize_t,
 };
 
+static swig_cast_info _swigc__p_BUFFER[] = {  {&_swigt__p_BUFFER, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_CIF[] = {  {&_swigt__p_CIF, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_CIFVALUE[] = {  {&_swigt__p_CIFVALUE, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_DATABLOCK[] = {  {&_swigt__p_DATABLOCK, 0, 0, 0},{0, 0, 0, 0}};
@@ -4406,6 +4557,7 @@ static swig_cast_info _swigc__p_cif_value_type_t[] = {  {&_swigt__p_cif_value_ty
 static swig_cast_info _swigc__p_ssize_t[] = {  {&_swigt__p_ssize_t, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
+  _swigc__p_BUFFER,
   _swigc__p_CIF,
   _swigc__p_CIFVALUE,
   _swigc__p_DATABLOCK,

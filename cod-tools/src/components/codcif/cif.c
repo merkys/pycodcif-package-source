@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
 **$Author: andrius $
-**$Date: 2017-11-10 11:33:14 +0200 (Fri, 10 Nov 2017) $ 
-**$Revision: 5759 $
-**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cif.c $
+**$Date: 2017-11-13 18:24:50 +0200 (Mon, 13 Nov 2017) $ 
+**$Revision: 5791 $
+**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/cif.c $
 \*---------------------------------------------------------------------------*/
 
 /* representation of the CIF data for the CIF parser. */
@@ -180,19 +180,26 @@ void cif_dump( CIF * volatile cif )
     }
 }
 
-void cif_print( CIF * volatile cif )
+void cif_sprint( BUFFER * buffer, CIF * volatile cif )
 {
     DATABLOCK *datablock;
 
     if( cif ) {
         if( cif->major_version > 1 ) {
-            printf( "#\\#CIF_%d.%d\n",
-                    cif->major_version, cif->minor_version );
+            char buf[100];
+            sprintf( buf, "#\\#CIF_%d.%d\n",
+                     cif->major_version, cif->minor_version );
+            bprint( buffer, buf, NULL );
         }
         foreach_datablock( datablock, cif->datablock_list ) {
-            datablock_print( datablock );
+            datablock_sprint( buffer, datablock );
         }
     }
+}
+
+void cif_print( CIF * volatile cif )
+{
+    cif_sprint( NULL, cif );
 }
 
 void cif_list_tags( CIF * volatile cif )

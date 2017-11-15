@@ -2,7 +2,7 @@
 ** $Author: saulius $
 ** $Date: 2015-07-21 17:39:27 +0300 (Tue, 21 Jul 2015) $
 ** $Revision: 3587 $
-** $URL: svn://www.crystallography.net/cod-tools/trunk/src/externals/cexceptions/stdiox.c $
+** $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/externals/cexceptions/stdiox.c $
 \*---------------------------------------------------------------------------*/
 
 /* exports: */

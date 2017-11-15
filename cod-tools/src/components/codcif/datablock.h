@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
 **$Author: andrius $
-**$Date: 2017-11-07 11:53:10 +0200 (Tue, 07 Nov 2017) $ 
-**$Revision: 5724 $
-**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/datablock.h $
+**$Date: 2017-11-14 15:26:44 +0200 (Tue, 14 Nov 2017) $ 
+**$Revision: 5801 $
+**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/datablock.h $
 \*---------------------------------------------------------------------------*/
 
 #ifndef __DATABLOCK_H
@@ -54,6 +54,7 @@ CIFVALUE *datablock_cifvalue( DATABLOCK *datablock, int tag_nr, int val_nr );
 ssize_t datablock_tag_index( DATABLOCK *datablock, char *tag );
 void datablock_overwrite_cifvalue( DATABLOCK * datablock, ssize_t tag_nr,
     ssize_t val_nr, CIFVALUE *value, cexception_t *ex );
+void datablock_delete_tag( DATABLOCK *datablock, ssize_t tag_nr );
 int *datablock_in_loop( DATABLOCK *datablock );
 // cif_value_type_t **datablock_types( DATABLOCK *datablock );
 cif_value_type_t datablock_value_type( DATABLOCK *datablock,
@@ -62,6 +63,7 @@ int datablock_loop_count( DATABLOCK *datablock );
 DATABLOCK * datablock_save_frame_list( DATABLOCK *datablock );
 
 void datablock_dump( DATABLOCK * volatile datablock );
+void datablock_sprint( BUFFER *buffer, DATABLOCK * volatile datablock );
 void datablock_print( DATABLOCK * volatile datablock );
 void datablock_list_tags( DATABLOCK * volatile datablock );
 void datablock_print_tag_values( DATABLOCK * volatile datablock,

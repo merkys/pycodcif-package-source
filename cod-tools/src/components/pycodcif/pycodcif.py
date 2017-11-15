@@ -403,8 +403,13 @@ class CifParserException(Exception):
     pass
 
 class CifFile(object):
-    def __init__(self):
-        self._cif = new_cif( None )
+    def __init__(self, file = None, parser_options = {}):
+        if file is None:
+# Create an empty CifFile object
+            self._cif = new_cif( None )
+        else:
+# Parse CIF file
+            self._cif = new_cif_from_cif_file( file, parser_options, None )
 
     def __getitem__(self, key):
         datablock = cif_datablock_list( self._cif )
@@ -424,9 +429,9 @@ class CifFile(object):
             return CifDatablock(datablock = datablock)
 
     def __str__(self):
-        with capture() as output:
-            cif_print( self._cif )
-        return output[0]
+        buffer = new_buffer( None )
+        cif_sprint( buffer, self._cif )
+        return buffer_string( buffer )
 
     def append(self, datablock):
 # must be a datablock!
@@ -466,6 +471,11 @@ class CifDatablock(object):
         else:
             datablock_overwrite_cifvalue( self._datablock, tag_index, 0, value[0], None )
 
+    def __delitem__(self, key):
+        tag_index = datablock_tag_index( self._datablock, key )
+        if tag_index != -1:
+            datablock_delete_tag( self._datablock, tag_index )
+
     def keys(self):
         length = datablock_length( self._datablock )
         return [ datablock_tag( self._datablock, x) for x in range(0, length) ]
@@ -485,22 +495,6 @@ class CifDatablock(object):
                                                   values[i][j], None )
         datablock_finish_loop( self._datablock, None )
 
-import contextlib
-
-@contextlib.contextmanager
-def capture():
-    import sys
-    from cStringIO import StringIO
-    oldout,olderr = sys.stdout, sys.stderr
-    try:
-        out=[StringIO(), StringIO()]
-        sys.stdout,sys.stderr = out
-        yield out
-    finally:
-        sys.stdout,sys.stderr = oldout, olderr
-        out[0] = out[0].getvalue()
-        out[1] = out[1].getvalue()
-
 
 
 def parse_cif(fname, prog, options):
@@ -510,6 +504,18 @@ parse_cif = _pycodcif.parse_cif
 def cif_option_default():
     return _pycodcif.cif_option_default()
 cif_option_default = _pycodcif.cif_option_default
+
+def new_buffer(ex):
+    return _pycodcif.new_buffer(ex)
+new_buffer = _pycodcif.new_buffer
+
+def bprint(buffer, string, ex):
+    return _pycodcif.bprint(buffer, string, ex)
+bprint = _pycodcif.bprint
+
+def buffer_string(buffer):
+    return _pycodcif.buffer_string(buffer)
+buffer_string = _pycodcif.buffer_string
 
 def new_value_from_scalar(s, type, ex):
     return _pycodcif.new_value_from_scalar(s, type, ex)
@@ -547,6 +553,10 @@ def datablock_overwrite_cifvalue(datablock, tag_nr, val_nr, value, ex):
     return _pycodcif.datablock_overwrite_cifvalue(datablock, tag_nr, val_nr, value, ex)
 datablock_overwrite_cifvalue = _pycodcif.datablock_overwrite_cifvalue
 
+def datablock_delete_tag(datablock, tag_nr):
+    return _pycodcif.datablock_delete_tag(datablock, tag_nr)
+datablock_delete_tag = _pycodcif.datablock_delete_tag
+
 def datablock_insert_cifvalue(datablock, tag, value, ex):
     return _pycodcif.datablock_insert_cifvalue(datablock, tag, value, ex)
 datablock_insert_cifvalue = _pycodcif.datablock_insert_cifvalue
@@ -579,9 +589,9 @@ def cif_append_datablock(cif, datablock):
     return _pycodcif.cif_append_datablock(cif, datablock)
 cif_append_datablock = _pycodcif.cif_append_datablock
 
-def cif_print(cif):
-    return _pycodcif.cif_print(cif)
-cif_print = _pycodcif.cif_print
+def cif_sprint(buffer, cif):
+    return _pycodcif.cif_sprint(buffer, cif)
+cif_sprint = _pycodcif.cif_sprint
 
 def cif_datablock_list(cif):
     return _pycodcif.cif_datablock_list(cif)
@@ -594,6 +604,10 @@ new_cif_from_cif_file = _pycodcif.new_cif_from_cif_file
 def extract_value(cifvalue):
     return _pycodcif.extract_value(cifvalue)
 extract_value = _pycodcif.extract_value
+
+def extract_parser_options(options):
+    return _pycodcif.extract_parser_options(options)
+extract_parser_options = _pycodcif.extract_parser_options
 
 def datablock_value_length(datablock, tag_index):
     return _pycodcif.datablock_value_length(datablock, tag_index)

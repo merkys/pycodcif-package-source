@@ -2,7 +2,7 @@
 ** $Author: antanas $
 ** $Date: 2015-11-03 18:13:49 +0200 (Tue, 03 Nov 2015) $ 
 ** $Revision: 4180 $
-** $URL: svn://www.crystallography.net/cod-tools/trunk/src/externals/cexceptions/allocx.c $
+** $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/externals/cexceptions/allocx.c $
 \*---------------------------------------------------------------------------*/
 
 /* memory allocation functions that use cexception handling */

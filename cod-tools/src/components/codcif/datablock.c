@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
 **$Author: andrius $
-**$Date: 2017-11-13 10:21:09 +0200 (Mon, 13 Nov 2017) $ 
-**$Revision: 5774 $
-**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/datablock.c $
+**$Date: 2017-11-14 15:51:51 +0200 (Tue, 14 Nov 2017) $ 
+**$Revision: 5808 $
+**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/datablock.c $
 \*---------------------------------------------------------------------------*/
 
 /* representation of the CIF data for the CIF parser. */
@@ -20,6 +20,7 @@
 #include <cexceptions.h>
 #include <cxprintf.h>
 #include <stringx.h>
+#include <buffer.h>
 
 void *datablock_subsystem = &datablock_subsystem;
 
@@ -268,24 +269,40 @@ void datablock_set_next( DATABLOCK *datablock, DATABLOCK *next )
     }
 }
 
-void datablock_print_tag( DATABLOCK * volatile datablock, int tag_nr )
+void datablock_sprint_tag( BUFFER * buffer, DATABLOCK * volatile datablock, int tag_nr )
 {
     assert( datablock );
-    printf( "%-32s", datablock->tags[tag_nr] );
+    size_t buffer_size = 33;
+    if( buffer_size < strlen( datablock->tags[tag_nr] ) + 1 ) {
+        buffer_size = strlen( datablock->tags[tag_nr] ) + 1;
+    }
+    char buf[buffer_size];
+    sprintf( buf, "%-32s", datablock->tags[tag_nr] );
+    bprint( buffer, buf, NULL );
+}
+
+void datablock_print_tag( DATABLOCK * volatile datablock, int tag_nr )
+{
+    datablock_sprint_tag( NULL, datablock, tag_nr );
+}
+
+void datablock_sprint_value( BUFFER * buffer, DATABLOCK * volatile datablock, int tag_nr, int value_idx )
+{
+    assert( datablock );
+    value_sprint( buffer, datablock->values[tag_nr][value_idx] );
 }
 
 void datablock_print_value( DATABLOCK * volatile datablock, int tag_nr, int value_idx )
 {
-    assert( datablock );
-    value_dump( datablock->values[tag_nr][value_idx] );
+    datablock_sprint_value( NULL, datablock, tag_nr, value_idx );
 }
 
-void datablock_print_tag_values( DATABLOCK * volatile datablock,
+void datablock_sprint_tag_values( BUFFER *buffer, DATABLOCK * volatile datablock,
     char ** tagnames, int tagcount, char * volatile prefix, char * separator,
     char * vseparator )
 {
 
-    printf( "%s", prefix );
+    bprint( buffer, prefix, NULL );
     ssize_t i, j, k;
     for( k = 0; k < tagcount; k++ ) {
         int isfound = 0;
@@ -295,24 +312,32 @@ void datablock_print_tag_values( DATABLOCK * volatile datablock,
                 int first = 1;
                 for( j = 0; j < datablock->value_lengths[i]; j++ ) {
                     if( first == 1 ) {
-                        printf( "%s", value_scalar( datablock->values[i][j] ) );
+                        bprint( buffer, value_scalar( datablock->values[i][j] ), NULL );
                         first = 0;
                     } else {
-                        printf( "%s%s", vseparator,
-                                value_scalar( datablock->values[i][j] ) );
+                        bprint( buffer, vseparator, NULL );
+                        bprint( buffer, value_scalar( datablock->values[i][j] ), NULL );
                     }
                 }
                 break;
             }
         }
         if( isfound == 0 ) {
-            printf( "?" );
+            bprint( buffer, "?", NULL );
         }
         if( k != tagcount - 1 ) {
-            printf( "%s", separator );
+            bprint( buffer, separator, NULL );
         }
     }
-    printf( "\n" );
+    bprint( buffer, "\n", NULL );
+}
+
+void datablock_print_tag_values( DATABLOCK * volatile datablock,
+    char ** tagnames, int tagcount, char * volatile prefix, char * separator,
+    char * vseparator )
+{
+    datablock_sprint_tag_values( NULL, datablock, tagnames, tagcount,
+                                 prefix, separator, vseparator );
 }
 
 void datablock_dump( DATABLOCK * volatile datablock )
@@ -326,14 +351,16 @@ void datablock_dump( DATABLOCK * volatile datablock )
     }
 }
 
-static int print_loop( DATABLOCK *datablock, ssize_t i )
+static int sprint_loop( BUFFER *buffer, DATABLOCK *datablock, ssize_t i )
 {
     ssize_t j, k, loop, max;
 
     loop = datablock->in_loop[i];
-    printf( "loop_\n" );
+    bprint( buffer, "loop_\n", NULL );
     for( j = datablock->loop_first[loop]; j <= datablock->loop_last[loop]; j++ ) {
-        printf( "    %s\n", datablock->tags[j] );
+        bprint( buffer, "    ", NULL );
+        bprint( buffer, datablock->tags[j], NULL );
+        bprint( buffer, "\n", NULL );
     }
 
     for( max = 0, j = datablock->loop_first[loop]; j <= datablock->loop_last[loop]; j++ ) {
@@ -344,44 +371,60 @@ static int print_loop( DATABLOCK *datablock, ssize_t i )
     for( k = 0; k < max; k++ ) {
         for( j = datablock->loop_first[loop]; j <= datablock->loop_last[loop]; j++ ) {
             if( k < datablock->value_lengths[j] ) {
-                datablock_print_value( datablock, j, k );
+                datablock_sprint_value( buffer, datablock, j, k );
             } else {
-                printf( ". " );
+                bprint( buffer, ". ", NULL );
             }
         }
-        printf( "\n" );
+        bprint( buffer, "\n", NULL );
     }
     return datablock->loop_last[loop];
 }
 
-void datablock_print_frame( DATABLOCK * volatile datablock, char *keyword )
+static int print_loop( DATABLOCK *datablock, ssize_t i ) {
+    return sprint_loop( NULL, datablock, i );
+}
+
+void datablock_sprint_frame( BUFFER * buffer, DATABLOCK * volatile datablock, char *keyword )
 {
     ssize_t i;
 
     assert( datablock );
 
-    printf( "%s%s\n",  keyword, datablock->name );
+    bprint( buffer, keyword, NULL );
+    bprint( buffer, datablock->name, NULL );
+    bprint( buffer, "\n", NULL );
 
     for( i = 0; i < datablock->length; i++ ) {
         if( datablock->in_loop[i] < 0 ) { /* tag is not in a loop */
-            datablock_print_tag( datablock, i );
-            datablock_print_value( datablock, i, 0 );
-            printf( "\n" );
+            datablock_sprint_tag( buffer, datablock, i );
+            datablock_sprint_value( buffer, datablock, i, 0 );
+            bprint( buffer, "\n", NULL );
         } else {
-            i = print_loop( datablock, i );
+            i = sprint_loop( buffer, datablock, i );
         }
     }
 
     DATABLOCK *frame;
     for( frame = datablock->save_frames; frame; frame = frame->next ) {
-        datablock_print_frame( frame, "save_" );
-        puts( "save_" );
+        datablock_sprint_frame( buffer, frame, "save_" );
+        bprint( buffer, "save_\n", NULL );
     }
+}
+
+void datablock_print_frame( DATABLOCK * volatile datablock, char *keyword )
+{
+    datablock_sprint_frame( NULL, datablock, keyword );
+}
+
+void datablock_sprint( BUFFER *buffer, DATABLOCK * volatile datablock )
+{
+    datablock_sprint_frame( buffer, datablock, "data_" );
 }
 
 void datablock_print( DATABLOCK * volatile datablock )
 {
-    datablock_print_frame( datablock, "data_" );
+    datablock_sprint( NULL, datablock );
 }
 
 void datablock_list_tags( DATABLOCK * volatile datablock )
@@ -468,6 +511,64 @@ void datablock_overwrite_cifvalue( DATABLOCK * datablock, ssize_t tag_nr,
     }
     cexception_catch {
         cexception_reraise( inner, ex );
+    }
+}
+
+void datablock_delete_loop_if_empty( DATABLOCK *datablock, int loop_nr )
+{
+    if( datablock->loop_first[loop_nr] >
+        datablock->loop_last[loop_nr] ) {
+
+        int i;
+        for( i = 0; i < datablock->length; i++ ) {
+            if( datablock->in_loop[i] > loop_nr ) {
+                datablock->in_loop[i]--;
+            }
+        }
+
+        for( i = loop_nr; i < datablock->loop_count-1; i++ ) {
+            datablock->loop_first[i] = datablock->loop_first[i+1];
+            datablock->loop_last[i] = datablock->loop_last[i+1];
+        }
+        datablock->loop_count--;
+    }
+}
+
+void datablock_delete_tag( DATABLOCK *datablock, ssize_t tag_nr )
+{
+    assert( datablock );
+    freex( datablock->tags[tag_nr] );
+
+    int i;
+    for( i = 0; i < datablock->value_lengths[tag_nr]; i++ ) {
+        delete_value( datablock_cifvalue( datablock, tag_nr, i ) );
+    }
+    freex( datablock->values[tag_nr] );
+
+    for( i = 0; i < datablock->loop_count; i++ ) {
+        if( datablock->loop_first[i] > tag_nr ) {
+            datablock->loop_first[i]--;
+        }
+        if( datablock->loop_last[i] >= tag_nr ) {
+            datablock->loop_last[i]--;
+        }
+    }
+
+    int loop_nr = datablock->in_loop[tag_nr];
+
+    for( i = tag_nr; i < datablock->length-1; i++ ) {
+        datablock->tags[i] = datablock->tags[i+1];
+        datablock->values[i] = datablock->values[i+1];
+        datablock->in_loop[i] = datablock->in_loop[i+1];
+        datablock->value_lengths[i] = datablock->value_lengths[i+1];
+        datablock->value_capacities[i] = datablock->value_capacities[i+1];
+    }
+    datablock->tags[datablock->length] = NULL;
+    datablock->values[datablock->length] = NULL;
+    datablock->length--;
+
+    if( loop_nr != -1 ) {
+        datablock_delete_loop_if_empty( datablock, loop_nr );
     }
 }
 

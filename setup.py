@@ -1,7 +1,7 @@
 from setuptools import setup, Command, Extension
 
-version = '0.8.9.dev1'
-svnrevision = '5781'
+version = '0.8.9.dev2'
+svnrevision = '5815'
 
 setup(
     name="pycodcif",
@@ -38,6 +38,7 @@ setup(
                    'cod-tools/src/components/codcif/ciflist.c',
                    'cod-tools/src/components/codcif/cif_grammar.tab.c',
                    'cod-tools/src/components/codcif/cif2_grammar.tab.c',
+                   'cod-tools/src/components/codcif/buffer.c',
 
                    'cod-tools/src/components/pycodcif/pycodcif.c',
                    'cod-tools/src/components/pycodcif/pycodcif_wrap.c'],

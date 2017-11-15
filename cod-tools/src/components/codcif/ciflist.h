@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------*\
 * $Author: andrius $
-* $Date: 2017-04-12 13:39:05 +0300 (Wed, 12 Apr 2017) $ 
-* $Revision: 5195 $
-* $URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/ciflist.h $
+* $Date: 2017-11-14 09:23:41 +0200 (Tue, 14 Nov 2017) $ 
+* $Revision: 5795 $
+* $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/ciflist.h $
 \*-------------------------------------------------------------------------*/
 
 #ifndef __CIFLIST_H
@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <cexceptions.h>
+#include <buffer.h>
 
 typedef struct CIFLIST CIFLIST;
 
@@ -17,6 +18,7 @@ typedef struct CIFLIST CIFLIST;
 
 CIFLIST *new_list( cexception_t *ex );
 void delete_list( CIFLIST *list );
+void list_sprint( BUFFER *buffer, CIFLIST *list );
 void list_dump( CIFLIST *list );
 
 void list_push( CIFLIST *list, CIFVALUE *value, cexception_t *ex );

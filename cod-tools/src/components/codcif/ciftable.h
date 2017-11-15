@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------*\
 * $Author: andrius $
-* $Date: 2017-04-12 13:39:05 +0300 (Wed, 12 Apr 2017) $ 
-* $Revision: 5195 $
-* $URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/ciftable.h $
+* $Date: 2017-11-14 09:23:41 +0200 (Tue, 14 Nov 2017) $ 
+* $Revision: 5795 $
+* $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/ciftable.h $
 \*-------------------------------------------------------------------------*/
 
 #ifndef __CIFTABLE_H
@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <cexceptions.h>
+#include <buffer.h>
 
 typedef struct CIFTABLE CIFTABLE;
 
@@ -17,6 +18,7 @@ typedef struct CIFTABLE CIFTABLE;
 
 CIFTABLE *new_table( cexception_t *ex );
 void delete_table( CIFTABLE *table );
+void table_sprint( BUFFER *buffer, CIFTABLE *table );
 void table_dump( CIFTABLE *table );
 
 size_t table_length( CIFTABLE *table );

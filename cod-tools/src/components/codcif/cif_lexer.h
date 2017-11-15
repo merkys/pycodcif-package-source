@@ -2,7 +2,7 @@
 **$Author: andrius $
 **$Date: 2017-11-07 11:53:10 +0200 (Tue, 07 Nov 2017) $ 
 **$Revision: 5724 $
-**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cif_lexer.h $
+**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/cif_lexer.h $
 \*---------------------------------------------------------------------------*/
 
 #ifndef __CIF_LEXER_H

@@ -2,7 +2,7 @@
 **$Author: andrius $
 **$Date: 2016-05-06 11:48:58 +0300 (Fri, 06 May 2016) $ 
 **$Revision: 4647 $
-**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cif_grammar_flex.c $
+**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/cif_grammar_flex.c $
 \*---------------------------------------------------------------------------*/
 
 /* exports: */

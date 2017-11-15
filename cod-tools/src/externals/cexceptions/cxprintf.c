@@ -2,7 +2,7 @@
 ** $Author: saulius $
 ** $Date: 2011-03-08 20:45:40 +0200 (Tue, 08 Mar 2011) $ 
 ** $Revision: 1590 $
-** $URL: svn://www.crystallography.net/cod-tools/trunk/src/externals/cexceptions/cxprintf.c $
+** $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/externals/cexceptions/cxprintf.c $
 \*---------------------------------------------------------------------------*/
 
 /* composing error message for the exception handling subsystem */

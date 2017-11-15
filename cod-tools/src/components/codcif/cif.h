@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
 **$Author: andrius $
-**$Date: 2017-11-10 11:33:14 +0200 (Fri, 10 Nov 2017) $ 
-**$Revision: 5759 $
-**$URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/cif.h $
+**$Date: 2017-11-14 09:19:32 +0200 (Tue, 14 Nov 2017) $ 
+**$Revision: 5793 $
+**$URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/cif.h $
 \*---------------------------------------------------------------------------*/
 
 #ifndef __CIF_H
@@ -56,6 +56,7 @@ void cif_start_save_frame( CIF * volatile cif, const char *name,
 void cif_finish_save_frame( CIF * volatile cif );
 
 void cif_dump( CIF * volatile cif );
+void cif_sprint( BUFFER * buffer, CIF * volatile cif );
 void cif_print( CIF * volatile cif );
 void cif_list_tags( CIF * volatile cif );
 ssize_t cif_tag_index( CIF * cif, char *tag );

@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------*\
 * $Author: andrius $
-* $Date: 2017-04-12 13:39:05 +0300 (Wed, 12 Apr 2017) $ 
-* $Revision: 5195 $
-* $URL: svn://www.crystallography.net/cod-tools/trunk/src/components/codcif/ciftable.c $
+* $Date: 2017-11-14 09:23:41 +0200 (Tue, 14 Nov 2017) $ 
+* $Revision: 5795 $
+* $URL: svn://www.crystallography.net/cod-tools/branches/experiment/andrius-codcif-CRUD-API/src/components/codcif/ciftable.c $
 \*-------------------------------------------------------------------------*/
 
 #include <string.h>
@@ -13,6 +13,7 @@
 #include <stringx.h>
 #include <ciftable.h>
 #include <cifvalue.h>
+#include <buffer.h>
 
 #define DELTA_CAPACITY (100)
 
@@ -46,10 +47,9 @@ CIFTABLE *new_table( cexception_t *ex )
     return table;
 }
 
-void table_dump( CIFTABLE *table )
-{
+void table_sprint( BUFFER *buffer, CIFTABLE *table ) {
     assert( table );
-    printf( " {" );
+    bprint( buffer, " {", NULL );
     size_t i;
     for( i = 0; i < table->length; i++ ) {
         int max_sq_in_row = 0;
@@ -69,22 +69,34 @@ void table_dump( CIFTABLE *table )
             }
             j++;
         }
+        char *buf;
+        size_t key_length = strlen( table->keys[i] );
         if( max_sq_in_row == 0 ) {
             // string without single quotes
-            printf( " '%s':", table->keys[i] );
+            buf = callocx( key_length + 4, sizeof(char), NULL );
+            sprintf( buf, " '%s':", table->keys[i] );
         } else if( max_dq_in_row == 0 ) {
             // string without double quotes
-            printf( " \"%s\":", table->keys[i] );
+            buf = callocx( key_length + 4, sizeof(char), NULL );
+            sprintf( buf, " \"%s\":", table->keys[i] );
         } else if( max_sq_in_row < 3 ) {
             // string with 1 or 2 single quotes and some double quotes
-            printf( " '''%s''':", table->keys[i] );
+            buf = callocx( key_length + 8, sizeof(char), NULL );
+            sprintf( buf, " '''%s''':", table->keys[i] );
         } else {
             // string with three single quotes and 1 or 2 double quotes
-            printf( " \"\"\"%s\"\"\":", table->keys[i] );
+            buf = callocx( key_length + 8, sizeof(char), NULL );
+            sprintf( buf, " \"\"\"%s\"\"\":", table->keys[i] );
         }
-        value_dump( table->values[i] );
+        bprint( buffer, buf, NULL );
+        value_sprint( buffer, table->values[i] );
     }
-    printf( " }" );
+    bprint( buffer, " }", NULL );
+}
+
+void table_dump( CIFTABLE *table )
+{
+    table_sprint( NULL, table );
 }
 
 size_t table_length( CIFTABLE *table )
