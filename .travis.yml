@@ -1,6 +1,12 @@
+matrix:
+  include:
+    - os: linux
+      dist: precise
+    - os: linux
+      dist: trusty
+    - os: osx
+
 install:
     - python setup.py install
 
 script: python setup.py test
-
-os: osx
